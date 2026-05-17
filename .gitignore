@@ -1,0 +1,11 @@
+.env
+bin/
+tmp/
+vendor/
+dist/
+coverage/
+
+.idea/
+.vscode/
+
+.DS_Store

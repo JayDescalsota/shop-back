@@ -1,0 +1,30 @@
+type User @key(fields: "id") {
+    id: ID!
+    email: String!
+    name: String
+}
+
+input RegisterInput {
+    email: String!
+    password: String!
+    name: String
+}
+
+input LoginInput {
+    email: String!
+    password: String!
+}
+
+type AuthResponse {
+    token: String!
+    user: User!
+}
+
+type Mutation {
+    register(input: RegisterInput!): AuthResponse!
+    login(input: LoginInput!): AuthResponse!
+}
+
+type Query {
+    me: String!
+}
