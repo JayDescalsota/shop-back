@@ -1,0 +1,165 @@
+#!/usr/bin/env bash
+
+# service - Bash runner script for backend microservices and databases.
+# Compatible with Git Bash, WSL, Linux, and macOS.
+
+set -e
+
+# Logging colors
+BLUE="\033[0;34m"
+GREEN="\033[0;32m"
+RED="\033[0;31m"
+YELLOW="\033[0;33m"
+NC="\033[0m" # No Color
+
+log_info() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+log_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+log_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+log_warn() {
+    echo -e "${YELLOW}[WARN]${NC} $1"
+}
+
+show_help() {
+    echo "Usage: ./service <command> [options]"
+    echo ""
+    echo "Commands:"
+    echo "  setup                    Start database containers and run migrations"
+    echo "  start                    Start all services (infra + microservices)"
+    echo "  stop                     Stop all running services"
+    echo "  restart                  Restart all running services"
+    echo "  rebuild <service>        Rebuild and restart a specific service"
+    echo "  rebuild -service <svc>   Rebuild and restart a specific service"
+    echo "  logs [service]           Follow logs for all or a specific service"
+    echo "  status                   Show status of all services"
+    echo ""
+    echo "Examples:"
+    echo "  ./service setup"
+    echo "  ./service start"
+    echo "  ./service rebuild auth"
+    echo "  ./service rebuild -service auth"
+}
+
+# Ensure docker compose is installed
+if ! command -v docker &> /dev/null; then
+    log_error "Docker is not installed or not in PATH."
+    exit 1
+fi
+
+COMMAND=$1
+shift || true
+
+case "$COMMAND" in
+    setup)
+        log_info "Starting database infrastructure (postgres, redis)..."
+        docker compose up -d postgres redis
+        
+        log_info "Waiting for PostgreSQL database to be ready..."
+        READY=false
+        for i in {1..30}; do
+            if docker compose exec -T postgres pg_isready -U postgres -d postgres &> /dev/null; then
+                READY=true
+                break
+            fi
+            sleep 1
+        done
+        
+        if [ "$READY" = true ]; then
+            log_success "Database is ready!"
+            log_info "Running SQL migrations..."
+            
+            # Find and execute all migrations
+            MIGRATIONS_FOUND=false
+            # Use find to locate SQL files under services/*/migrations
+            # This is safer than globbing in case folders don't exist yet
+            if [ -d "services" ]; then
+                for migration in $(find services -path "*/migrations/*.sql" 2>/dev/null | sort); do
+                    if [ -f "$migration" ]; then
+                        MIGRATIONS_FOUND=true
+                        log_info "Executing migration: $migration"
+                        docker compose exec -T postgres psql -U postgres -d postgres < "$migration"
+                    fi
+                done
+            fi
+            
+            if [ "$MIGRATIONS_FOUND" = true ]; then
+                log_success "All migrations executed successfully."
+            else
+                log_warn "No migration files found under services/*/migrations/*.sql."
+            fi
+            log_success "Database setup complete."
+        else
+            log_error "PostgreSQL database failed to start or become ready in time."
+            exit 1
+        fi
+        ;;
+        
+    start)
+        log_info "Starting all services (infra + microservices)..."
+        docker compose up -d
+        log_success "All services started successfully in the background."
+        log_info "Use './service logs' to view logs or './service status' to view container status."
+        ;;
+        
+    stop)
+        log_info "Stopping all services..."
+        docker compose down
+        log_success "All services stopped."
+        ;;
+        
+    restart)
+        log_info "Restarting all services..."
+        docker compose restart
+        log_success "All services restarted."
+        ;;
+        
+    rebuild)
+        # Parse rebuild arguments (support "rebuild auth" and "rebuild -service auth")
+        SERVICE_NAME=""
+        if [ "$1" = "-service" ]; then
+            SERVICE_NAME=$2
+        else
+            SERVICE_NAME=$1
+        fi
+        
+        if [ -z "$SERVICE_NAME" ]; then
+            log_error "Please specify a service to rebuild. Example: ./service rebuild auth"
+            exit 1
+        fi
+        
+        # Verify that the service is defined in docker-compose.yml
+        # (A simple check to ensure they typed a valid container service name)
+        if ! docker compose config --services | grep -Fxq "$SERVICE_NAME"; then
+            log_error "Service '$SERVICE_NAME' not found in docker-compose.yml."
+            log_info "Available services are: $(docker compose config --services | xargs)"
+            exit 1
+        fi
+        
+        log_info "Rebuilding service '$SERVICE_NAME'..."
+        docker compose build "$SERVICE_NAME"
+        
+        log_info "Restarting service '$SERVICE_NAME'..."
+        docker compose up -d --no-deps "$SERVICE_NAME"
+        log_success "Service '$SERVICE_NAME' successfully rebuilt and restarted."
+        ;;
+        
+    logs)
+        docker compose logs -f "$@"
+        ;;
+        
+    status)
+        docker compose ps
+        ;;
+        
+    *)
+        show_help
+        ;;
+esac
