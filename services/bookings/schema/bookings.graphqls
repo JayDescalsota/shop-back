@@ -1,0 +1,104 @@
+extend schema
+    @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key", "@shareable", "@external"])
+
+type Booking @key(fields: "id") {
+    id: ID!
+    tenantId: ID!
+    shopId: ID!
+    customerId: ID!
+    vehicleId: ID
+    serviceType: String!
+    description: String
+    status: BookingStatus!
+    scheduledDate: String!
+    startTime: String!
+    endTime: String!
+    assignedStaff: ID
+    notes: String
+    cancellationReason: String
+    createdAt: String!
+    updatedAt: String!
+}
+
+enum BookingStatus {
+    PENDING
+    CONFIRMED
+    IN_PROGRESS
+    COMPLETED
+    CANCELLED
+    NO_SHOW
+}
+
+type BookingSlot {
+    id: ID!
+    tenantId: ID!
+    shopId: ID!
+    date: String!
+    startTime: String!
+    endTime: String!
+    isAvailable: Boolean!
+    staffId: ID
+}
+
+type ShopAvailability {
+    id: ID!
+    tenantId: ID!
+    shopId: ID!
+    dayOfWeek: Int!
+    openTime: String!
+    closeTime: String!
+    isAvailable: Boolean!
+}
+
+extend type Query {
+    booking(id: ID!): Booking
+    bookings(shopId: ID!, status: BookingStatus, date: String, page: Int, perPage: Int): BookingConnection!
+    myBookings(customerId: ID!, status: BookingStatus, page: Int, perPage: Int): BookingConnection!
+    availableSlots(shopId: ID!, date: String!): [BookingSlot!]!
+    shopAvailability(shopId: ID!): [ShopAvailability!]!
+}
+
+extend type Mutation {
+    createBooking(input: CreateBookingInput!): Booking!
+    updateBooking(id: ID!, input: UpdateBookingInput!): Booking!
+    cancelBooking(id: ID!, reason: String): Booking!
+    completeBooking(id: ID!): Booking!
+    confirmBooking(id: ID!): Booking!
+    setShopAvailability(shopId: ID!, input: [AvailabilityInput!]!): [ShopAvailability!]!
+}
+
+type BookingConnection {
+    items: [Booking!]!
+    total: Int!
+    page: Int!
+    perPage: Int!
+}
+
+input CreateBookingInput {
+    shopId: ID!
+    customerId: ID!
+    vehicleId: ID
+    serviceType: String!
+    description: String
+    scheduledDate: String!
+    startTime: String!
+    endTime: String!
+    assignedStaff: ID
+}
+
+input UpdateBookingInput {
+    serviceType: String
+    description: String
+    scheduledDate: String
+    startTime: String
+    endTime: String
+    assignedStaff: ID
+    notes: String
+}
+
+input AvailabilityInput {
+    dayOfWeek: Int!
+    openTime: String!
+    closeTime: String!
+    isAvailable: Boolean
+}

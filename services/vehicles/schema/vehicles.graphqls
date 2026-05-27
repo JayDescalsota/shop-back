@@ -1,0 +1,173 @@
+extend schema
+    @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key", "@shareable", "@external"])
+
+type Vehicle @key(fields: "id") {
+    id: ID!
+    tenantId: ID!
+    ownerId: ID!
+    make: VehicleMake
+    model: VehicleModel
+    year: Int
+    vin: String
+    licensePlate: String
+    color: String
+    engineType: String
+    transmission: String
+    currentMileage: Int!
+    fuelType: String
+    purchaseDate: String
+    purchasePrice: Float
+    imageUrl: String
+    notes: String
+    createdAt: String!
+    updatedAt: String!
+}
+
+type VehicleMake @key(fields: "id") {
+    id: ID!
+    name: String!
+    logo: String
+    models: [VehicleModel!]!
+}
+
+type VehicleModel @key(fields: "id") {
+    id: ID!
+    makeId: ID!
+    name: String!
+    yearStart: Int
+    yearEnd: Int
+}
+
+type VehicleMaintenance {
+    id: ID!
+    vehicleId: ID!
+    serviceType: String!
+    description: String
+    mileageAtService: Int
+    cost: Float
+    serviceDate: String!
+    providerName: String
+    status: String!
+    nextDueMileage: Int
+    nextDueDate: String
+    documents: JSON!
+}
+
+type VehicleExpense {
+    id: ID!
+    vehicleId: ID!
+    category: String!
+    amount: Float!
+    date: String!
+    description: String
+    receiptUrl: String
+    recurring: Boolean!
+}
+
+type VehicleDocument {
+    id: ID!
+    vehicleId: ID!
+    docType: String!
+    title: String!
+    fileUrl: String!
+    expiryDate: String
+}
+
+extend type Query {
+    vehicle(id: ID!): Vehicle
+    vehicles(ownerId: ID, page: Int, perPage: Int): VehicleConnection!
+    vehicleMakes: [VehicleMake!]!
+    vehicleModels(makeId: ID!): [VehicleModel!]!
+    vehicleMaintenance(vehicleId: ID!): [VehicleMaintenance!]!
+    vehicleExpenses(vehicleId: ID!): [VehicleExpense!]!
+    vehicleDocuments(vehicleId: ID!): [VehicleDocument!]!
+    maintenanceHistory(vehicleId: ID!): [VehicleMaintenance!]!
+    expenseSummary(vehicleId: ID!): ExpenseSummary!
+}
+
+extend type Mutation {
+    createVehicle(input: CreateVehicleInput!): Vehicle!
+    updateVehicle(id: ID!, input: UpdateVehicleInput!): Vehicle!
+    deleteVehicle(id: ID!): Boolean!
+    logMileage(vehicleId: ID!, mileage: Int!, notes: String): Vehicle!
+    addMaintenance(input: AddMaintenanceInput!): VehicleMaintenance!
+    addExpense(input: AddExpenseInput!): VehicleExpense!
+    addDocument(input: AddDocumentInput!): VehicleDocument!
+}
+
+type VehicleConnection {
+    items: [Vehicle!]!
+    total: Int!
+    page: Int!
+    perPage: Int!
+}
+
+type ExpenseSummary {
+    totalRepairs: Float!
+    totalMaintenance: Float!
+    totalFuel: Float!
+    totalInsurance: Float!
+    totalOther: Float!
+    grandTotal: Float!
+    monthlyAverage: Float!
+}
+
+input CreateVehicleInput {
+    ownerId: ID!
+    makeId: ID
+    modelId: ID
+    year: Int
+    vin: String
+    licensePlate: String
+    color: String
+    engineType: String
+    transmission: String
+    currentMileage: Int
+    fuelType: String
+    purchaseDate: String
+    purchasePrice: Float
+    notes: String
+}
+
+input UpdateVehicleInput {
+    makeId: ID
+    modelId: ID
+    year: Int
+    vin: String
+    licensePlate: String
+    color: String
+    currentMileage: Int
+    notes: String
+}
+
+input AddMaintenanceInput {
+    vehicleId: ID!
+    serviceType: String!
+    description: String
+    mileageAtService: Int
+    cost: Float
+    serviceDate: String!
+    providerName: String
+    notes: String
+    nextDueMileage: Int
+    nextDueDate: String
+}
+
+input AddExpenseInput {
+    vehicleId: ID!
+    category: String!
+    amount: Float!
+    date: String!
+    description: String
+    recurring: Boolean
+}
+
+input AddDocumentInput {
+    vehicleId: ID!
+    docType: String!
+    title: String!
+    fileUrl: String!
+    expiryDate: String
+}
+
+scalar JSON

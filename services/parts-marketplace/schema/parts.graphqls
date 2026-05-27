@@ -1,0 +1,159 @@
+extend schema
+    @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key", "@shareable", "@external"])
+
+type PartsCatalogItem @key(fields: "id") {
+    id: ID!
+    tenantId: ID!
+    oeNumber: String
+    sku: String!
+    name: String!
+    description: String
+    brand: String
+    category: String
+    compatibleVehicles: JSON
+    unitPrice: Float!
+    availableQty: Int!
+    imageUrls: JSON
+    isActive: Boolean!
+}
+
+type PartsQuote @key(fields: "id") {
+    id: ID!
+    tenantId: ID!
+    requestorId: ID!
+    shopId: ID!
+    status: PartsQuoteStatus!
+    notes: String
+    validUntil: String
+    totalAmount: Float
+    items: [PartsQuoteItem!]
+    createdAt: String!
+}
+
+enum PartsQuoteStatus {
+    PENDING
+    QUOTED
+    ACCEPTED
+    REJECTED
+    EXPIRED
+}
+
+type PartsQuoteItem {
+    id: ID!
+    partId: ID
+    description: String!
+    quantity: Int!
+    unitPrice: Float
+    totalPrice: Float
+    supplierId: ID
+}
+
+type PartsOrder @key(fields: "id") {
+    id: ID!
+    tenantId: ID!
+    buyerId: ID!
+    sellerId: ID!
+    quoteId: ID
+    orderNumber: String!
+    status: String!
+    totalAmount: Float!
+    shippingCost: Float
+    taxAmount: Float
+    shippingAddress: JSON
+    notes: String
+    items: [PartsOrderItem!]
+    createdAt: String!
+}
+
+type PartsOrderItem {
+    id: ID!
+    partId: ID!
+    quantity: Int!
+    unitPrice: Float!
+    totalPrice: Float!
+}
+
+extend type Query {
+    partsCatalog(id: ID!): PartsCatalogItem
+    searchParts(query: String!, category: String, page: Int, perPage: Int): PartsCatalogConnection!
+    partsQuote(id: ID!): PartsQuote
+    myQuotes(requestorId: ID!, status: PartsQuoteStatus): [PartsQuote!]!
+    receivedQuotes(shopId: ID!, status: PartsQuoteStatus): [PartsQuote!]!
+    partsOrder(id: ID!): PartsOrder
+    myOrders(buyerId: ID!, status: String): [PartsOrder!]!
+    receivedOrders(sellerId: ID!, status: String): [PartsOrder!]!
+}
+
+extend type Mutation {
+    createPartsCatalogItem(input: CreatePartsCatalogItemInput!): PartsCatalogItem!
+    updatePartsCatalogItem(id: ID!, input: UpdatePartsCatalogItemInput!): PartsCatalogItem!
+    requestQuote(input: RequestQuoteInput!): PartsQuote!
+    submitQuote(quoteId: ID!, items: [QuoteItemInput!]!, validUntil: String): PartsQuote!
+    acceptQuote(quoteId: ID!): PartsQuote!
+    rejectQuote(quoteId: ID!, reason: String): PartsQuote!
+    placePartsOrder(input: PlacePartsOrderInput!): PartsOrder!
+    updatePartsOrderStatus(id: ID!, status: String!): PartsOrder!
+}
+
+type PartsCatalogConnection {
+    items: [PartsCatalogItem!]!
+    total: Int!
+    page: Int!
+    perPage: Int!
+}
+
+input CreatePartsCatalogItemInput {
+    oeNumber: String
+    sku: String!
+    name: String!
+    description: String
+    brand: String
+    category: String
+    compatibleVehicles: JSON
+    unitPrice: Float!
+    availableQty: Int
+}
+
+input UpdatePartsCatalogItemInput {
+    name: String
+    description: String
+    unitPrice: Float
+    availableQty: Int
+    isActive: Boolean
+}
+
+input RequestQuoteInput {
+    shopId: ID!
+    notes: String
+    items: [QuoteRequestItemInput!]!
+}
+
+input QuoteRequestItemInput {
+    partId: ID
+    description: String!
+    quantity: Int!
+}
+
+input QuoteItemInput {
+    partId: ID
+    description: String!
+    quantity: Int!
+    unitPrice: Float!
+    supplierId: ID
+}
+
+input PlacePartsOrderInput {
+    sellerId: ID!
+    quoteId: ID
+    items: [PartsOrderItemInput!]!
+    shippingAddress: JSON
+    notes: String
+}
+
+input PartsOrderItemInput {
+    partId: ID!
+    quantity: Int!
+    unitPrice: Float!
+}
+
+scalar JSON

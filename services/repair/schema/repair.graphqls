@@ -1,0 +1,149 @@
+extend schema
+    @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key", "@shareable", "@external"])
+
+type RepairOrder @key(fields: "id") {
+    id: ID!
+    tenantId: ID!
+    shopId: ID!
+    bookingId: ID
+    customerId: ID!
+    vehicleId: ID!
+    status: RepairOrderStatus!
+    odometerIn: Int
+    odometerOut: Int
+    customerComplaint: String
+    technicianNotes: String
+    diagnosis: String
+    estimatedCost: Float
+    actualCost: Float
+    taxAmount: Float
+    totalAmount: Float
+    discountAmount: Float
+    startedAt: String
+    completedAt: String
+    createdAt: String!
+    updatedAt: String!
+}
+
+enum RepairOrderStatus {
+    DRAFT
+    ESTIMATE
+    APPROVED
+    IN_PROGRESS
+    COMPLETED
+    INVOICED
+    PAID
+    CANCELLED
+}
+
+type RepairLineItem {
+    id: ID!
+    repairOrderId: ID!
+    itemType: String!
+    description: String!
+    quantity: Float!
+    unitPrice: Float!
+    totalPrice: Float!
+    partId: ID
+    technicianId: ID
+}
+
+type JobCard {
+    id: ID!
+    repairOrderId: ID!
+    assignedTo: ID!
+    task: String!
+    status: String!
+    notes: String
+    startedAt: String
+    completedAt: String
+    estimatedHours: Float
+    actualHours: Float
+}
+
+type Diagnostic {
+    id: ID!
+    repairOrderId: ID!
+    diagnosticCode: String
+    description: String!
+    severity: String
+    recommendedAction: String
+    performedBy: ID
+}
+
+extend type Query {
+    repairOrder(id: ID!): RepairOrder
+    repairOrders(shopId: ID!, status: RepairOrderStatus, customerId: ID, page: Int, perPage: Int): RepairOrderConnection!
+    repairLineItems(repairOrderId: ID!): [RepairLineItem!]!
+    jobCards(repairOrderId: ID!): [JobCard!]!
+    diagnostics(repairOrderId: ID!): [Diagnostic!]!
+}
+
+extend type Mutation {
+    createRepairOrder(input: CreateRepairOrderInput!): RepairOrder!
+    updateRepairOrder(id: ID!, input: UpdateRepairOrderInput!): RepairOrder!
+    addLineItem(repairOrderId: ID!, input: AddLineItemInput!): RepairLineItem!
+    removeLineItem(id: ID!): Boolean!
+    createJobCard(repairOrderId: ID!, input: CreateJobCardInput!): JobCard!
+    updateJobCard(id: ID!, input: UpdateJobCardInput!): JobCard!
+    addDiagnostic(repairOrderId: ID!, input: AddDiagnosticInput!): Diagnostic!
+    approveEstimate(id: ID!): RepairOrder!
+    startRepair(id: ID!): RepairOrder!
+    completeRepair(id: ID!): RepairOrder!
+    invoiceRepair(id: ID!): RepairOrder!
+}
+
+type RepairOrderConnection {
+    items: [RepairOrder!]!
+    total: Int!
+    page: Int!
+    perPage: Int!
+}
+
+input CreateRepairOrderInput {
+    shopId: ID!
+    bookingId: ID
+    customerId: ID!
+    vehicleId: ID!
+    customerComplaint: String
+    odometerIn: Int
+}
+
+input UpdateRepairOrderInput {
+    customerComplaint: String
+    technicianNotes: String
+    diagnosis: String
+    odometerIn: Int
+    odometerOut: Int
+    discountAmount: Float
+}
+
+input AddLineItemInput {
+    itemType: String!
+    description: String!
+    quantity: Float
+    unitPrice: Float!
+    partId: ID
+    technicianId: ID
+}
+
+input CreateJobCardInput {
+    repairOrderId: ID!
+    assignedTo: ID!
+    task: String!
+    estimatedHours: Float
+}
+
+input UpdateJobCardInput {
+    status: String
+    notes: String
+    actualHours: Float
+}
+
+input AddDiagnosticInput {
+    repairOrderId: ID!
+    diagnosticCode: String
+    description: String!
+    severity: String
+    recommendedAction: String
+}

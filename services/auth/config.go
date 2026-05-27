@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -21,12 +22,29 @@ type Config struct {
 	RedisHost string
 	RedisPort string
 
-	JWTSecret string
+	JWTSecret          string
+	JWTExpiration      time.Duration
+	JWTRefreshExpiration time.Duration
+}
+
+func (c Config) DSN() string {
+	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
+		c.DBUser, c.DBPassword, c.DBHost, c.DBPort, c.DBName)
 }
 
 func loadConfig() (Config, error) {
 	if err := loadEnvFile(); err != nil {
 		return Config{}, fmt.Errorf("load .env: %w", err)
+	}
+
+	jwtExp, err := time.ParseDuration(getEnv("JWT_EXPIRATION", "24h"))
+	if err != nil {
+		return Config{}, fmt.Errorf("parse JWT_EXPIRATION: %w", err)
+	}
+
+	refreshExp, err := time.ParseDuration(getEnv("REFRESH_EXPIRATION", "720h"))
+	if err != nil {
+		return Config{}, fmt.Errorf("parse REFRESH_EXPIRATION: %w", err)
 	}
 
 	return Config{
@@ -39,7 +57,9 @@ func loadConfig() (Config, error) {
 		DBName:     getEnv("DB_NAME", "postgres"),
 		RedisHost:  getEnv("REDIS_HOST", "localhost"),
 		RedisPort:  getEnv("REDIS_PORT", "6379"),
-		JWTSecret:  getEnv("JWT_SECRET", "mysecretkey"),
+		JWTSecret:             getEnv("JWT_SECRET", "mysecretkey"),
+		JWTExpiration:         jwtExp,
+		JWTRefreshExpiration:  refreshExp,
 	}, nil
 }
 

@@ -2,13 +2,23 @@ package resolver
 
 import (
 	"context"
+	"encoding/json"
 
+	"backend/packages/middleware"
 	"backend/services/auth/generated"
 	"backend/services/auth/model"
 )
 
+type contextKey string
+
+const (
+	AppIDKey    contextKey = "app_id"
+	BranchIDKey contextKey = "branch_id"
+)
+
 func (r *mutationResolver) Register(ctx context.Context, input model.RegisterInput) (*model.AuthResponse, error) {
-	return r.auth.Register(ctx, input)
+	app, _ := ctx.Value(AppIDKey).(string)
+	return r.auth.Register(ctx, input, app)
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input model.LoginInput) (*model.AuthResponse, error) {
@@ -16,7 +26,16 @@ func (r *mutationResolver) Login(ctx context.Context, input model.LoginInput) (*
 }
 
 func (r *queryResolver) Me(ctx context.Context) (string, error) {
-	return "anonymous", nil
+	email := middleware.GetEmail(ctx)
+	if email == "" {
+		return "anonymous", nil
+	}
+	info, err := r.auth.GetUserInfo(ctx, email)
+	if err != nil {
+		return "", err
+	}
+	b, _ := json.Marshal(info)
+	return string(b), nil
 }
 
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }

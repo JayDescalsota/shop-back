@@ -1,0 +1,30 @@
+extend schema
+    @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key", "@shareable", "@external"])
+
+type SearchResult {
+    type: String!
+    id: ID!
+    title: String!
+    description: String
+    score: Float!
+    url: String
+    metadata: JSON
+}
+
+type SearchResults {
+    items: [SearchResult!]!
+    total: Int!
+    page: Int!
+    perPage: Int!
+    queryTime: Float!
+}
+
+extend type Query {
+    search(query: String!, types: [String!], tenantId: ID, page: Int, perPage: Int): SearchResults!
+    globalSearch(query: String!, tenantId: ID, page: Int, perPage: Int): SearchResults!
+    searchParts(query: String!, tenantId: ID, page: Int, perPage: Int): SearchResults!
+    searchVehicles(query: String!, tenantId: ID, page: Int, perPage: Int): SearchResults!
+    searchInventory(query: String!, tenantId: ID, page: Int, perPage: Int): SearchResults!
+}
+
+scalar JSON

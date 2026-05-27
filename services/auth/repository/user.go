@@ -16,22 +16,22 @@ var (
 	ErrEmailTaken   = errors.New("email already registered")
 )
 
-// User is the database representation of a user row.
 type User struct {
-	bun.BaseModel `bun:"table:users"`
-	ID            string `bun:",pk"`
-	Email         string `bun:",unique,notnull"`
-	Password      string `bun:",notnull"`
+	bun.BaseModel `bun:"auth.users"`
+	ID            string    `bun:",pk"`
+	Email         string    `bun:",notnull,unique"`
+	Password      string    `bun:",notnull"`
 	Name          *string
+	Role          string    `bun:",notnull,default:'user'"`
 	CreatedAt     time.Time `bun:",nullzero,notnull,default:current_timestamp"`
 	UpdatedAt     time.Time `bun:",nullzero,notnull,default:current_timestamp"`
 }
 
-// UserRepository defines persistence operations for users.
 type UserRepository interface {
 	Create(ctx context.Context, user *User) error
 	FindByEmail(ctx context.Context, email string) (*User, error)
 	FindByID(ctx context.Context, id string) (*User, error)
+	UpdatePassword(ctx context.Context, id, hashedPassword string) error
 }
 
 type userRepository struct {
@@ -75,6 +75,16 @@ func (r *userRepository) FindByID(ctx context.Context, id string) (*User, error)
 		return nil, fmt.Errorf("find user by id: %w", err)
 	}
 	return &user, nil
+}
+
+func (r *userRepository) UpdatePassword(ctx context.Context, id, hashedPassword string) error {
+	_, err := r.db.NewUpdate().
+		Model(&User{}).
+		Set("password = ?", hashedPassword).
+		Set("updated_at = ?", time.Now()).
+		Where("id = ?", id).
+		Exec(ctx)
+	return err
 }
 
 func isDuplicateKey(err error) bool {

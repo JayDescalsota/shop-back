@@ -1,13 +1,38 @@
+extend schema
+    @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key", "@shareable", "@external"])
+
+type Query {
+    me: User
+    user(id: ID!): User
+    users(tenantId: ID!, page: Int, perPage: Int): UserConnection!
+}
+
+type Mutation {
+    register(input: RegisterInput!): AuthResponse!
+    login(input: LoginInput!): AuthResponse!
+    refreshToken(token: String!): AuthResponse!
+    forgotPassword(email: String!): Boolean!
+    resetPassword(token: String!, password: String!): Boolean!
+}
+
 type User @key(fields: "id") {
     id: ID!
     email: String!
-    name: String
+    name: String!
+    phone: String
+    role: String!
+    isActive: Boolean!
+    emailVerified: Boolean!
+    lastLoginAt: String
+    createdAt: String!
+    updatedAt: String!
 }
 
 input RegisterInput {
     email: String!
     password: String!
-    name: String
+    name: String!
+    phone: String
 }
 
 input LoginInput {
@@ -17,14 +42,15 @@ input LoginInput {
 
 type AuthResponse {
     token: String!
+    refreshToken: String!
+    expiresAt: String!
     user: User!
 }
 
-type Mutation {
-    register(input: RegisterInput!): AuthResponse!
-    login(input: LoginInput!): AuthResponse!
-}
-
-type Query {
-    me: String!
+type UserConnection {
+    items: [User!]!
+    total: Int!
+    page: Int!
+    perPage: Int!
+    totalPages: Int!
 }

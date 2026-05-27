@@ -1,11 +1,7 @@
+build/
+coverage.out
+coverage.html
 .env
-bin/
-tmp/
+*.log
+.tmp/
 vendor/
-dist/
-coverage/
-
-.idea/
-.vscode/
-
-.DS_Store

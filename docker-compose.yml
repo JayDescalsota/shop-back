@@ -1,44 +1,331 @@
-# version: '3.9'
-
 services:
   postgres:
     container_name: postgres
     image: postgres:16
-    restart: always
-    env_file:
-      - .env
+    restart: unless-stopped
+    env_file: .env
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 1
-      POSTGRES_DB: postgres
+      POSTGRES_DB: autolab
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./deployments/migrations/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     container_name: redis
-    image: redis:7
-    restart: always
+    image: redis:7-alpine
+    restart: unless-stopped
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  nats:
+    container_name: nats
+    image: nats:2.10-alpine
+    restart: unless-stopped
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    command: ["-js", "-sd", "/data"]
+    volumes:
+      - nats_data:/data
+    healthcheck:
+      test: ["CMD", "wget", "-q", "http://localhost:8222/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  minio:
+    container_name: minio
+    image: minio/minio:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+
+  # --- Services ---
+  gateway:
+    container_name: gateway
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: gateway
+    ports:
+      - "4000:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_PORT: "8080"
+      SERVICE_NAME: gateway
+      DB_HOST: postgres
+      REDIS_HOST: redis
 
   auth:
     container_name: auth
     build:
       context: .
-      dockerfile: services/auth/Dockerfile
+      dockerfile: Dockerfile
+      args:
+        SERVICE: auth
     ports:
-      - "8080:8080"
+      - "8081:8080"
     depends_on:
-      - postgres
-      - redis
-    env_file:
-      - .env
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file: .env
     environment:
+      APP_PORT: "8080"
+      SERVICE_NAME: auth
       DB_HOST: postgres
       REDIS_HOST: redis
+      NATS_URL: nats://nats:4222
+
+  users:
+    container_name: users
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: users
+    ports:
+      - "8082:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file: .env
+    environment:
       APP_PORT: "8080"
+      SERVICE_NAME: users
+      DB_HOST: postgres
+      REDIS_HOST: redis
+
+  vehicles:
+    container_name: vehicles
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: vehicles
+    ports:
+      - "8083:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_PORT: "8080"
+      SERVICE_NAME: vehicles
+      DB_HOST: postgres
+      REDIS_HOST: redis
+
+  bookings:
+    container_name: bookings
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: bookings
+    ports:
+      - "8084:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_PORT: "8080"
+      SERVICE_NAME: bookings
+      DB_HOST: postgres
+      REDIS_HOST: redis
+
+  repair:
+    container_name: repair
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: repair
+    ports:
+      - "8085:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_PORT: "8080"
+      SERVICE_NAME: repair
+      DB_HOST: postgres
+      REDIS_HOST: redis
+
+  inventory:
+    container_name: inventory
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: inventory
+    ports:
+      - "8086:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_PORT: "8080"
+      SERVICE_NAME: inventory
+      DB_HOST: postgres
+      REDIS_HOST: redis
+
+  parts-marketplace:
+    container_name: parts-marketplace
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: parts-marketplace
+    ports:
+      - "8087:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_PORT: "8080"
+      SERVICE_NAME: parts-marketplace
+      DB_HOST: postgres
+      REDIS_HOST: redis
+
+  payments:
+    container_name: payments
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: payments
+    ports:
+      - "8088:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_PORT: "8080"
+      SERVICE_NAME: payments
+      DB_HOST: postgres
+      REDIS_HOST: redis
+
+  payroll:
+    container_name: payroll
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: payroll
+    ports:
+      - "8089:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_PORT: "8080"
+      SERVICE_NAME: payroll
+      DB_HOST: postgres
+      REDIS_HOST: redis
+
+  notifications:
+    container_name: notifications
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: notifications
+    ports:
+      - "8090:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_PORT: "8080"
+      SERVICE_NAME: notifications
+      DB_HOST: postgres
+      REDIS_HOST: redis
+      NATS_URL: nats://nats:4222
+
+  lookup:
+    container_name: lookup
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: lookup
+    ports:
+      - "8090:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_PORT: "8090"
+      SERVICE_NAME: lookup
+      DB_HOST: postgres
+      REDIS_HOST: redis
+
+  search:
+    container_name: search
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: search
+    ports:
+      - "8091:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_PORT: "8080"
+      SERVICE_NAME: search
+      DB_HOST: postgres
+      REDIS_HOST: redis
 
 volumes:
   postgres_data:
+  redis_data:
+  nats_data:
+  minio_data:

@@ -1,0 +1,170 @@
+extend schema
+    @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key", "@shareable", "@external"])
+
+# ============================================================================
+# TENANT / BRANCH
+# ============================================================================
+type Tenant @key(fields: "id") {
+    id: ID!
+    name: String!
+    type: TenantType!
+    status: TenantStatus!
+    domain: String
+    settings: JSON
+    createdAt: String!
+    updatedAt: String!
+}
+
+enum TenantType {
+    AUTO_OWNER
+    REPAIR_SHOP
+    PARTS_STORE
+    PLATFORM
+}
+
+enum TenantStatus {
+    ACTIVE
+    SUSPENDED
+    TRIAL
+    CANCELLED
+}
+
+type TenantSettings @key(fields: "id") {
+    id: ID!
+    tenantId: ID!
+    businessHours: JSON
+    paymentConfig: JSON
+    notificationConfig: JSON
+    branding: JSON
+    features: JSON
+}
+
+# ============================================================================
+# USER PROFILE & ROLE
+# ============================================================================
+type UserProfile {
+    id: ID!
+    userId: ID!
+    title: String
+    department: String
+    timezone: String!
+    locale: String!
+    notificationPrefs: JSON!
+}
+
+type Role {
+    id: ID!
+    code: String!
+    name: String!
+    description: String
+    isSystem: Boolean!
+    permissions: [Permission!]!
+}
+
+type Permission {
+    id: ID!
+    code: String!
+    name: String!
+    description: String
+    module: String!
+}
+
+# ============================================================================
+# SSO / USER CONTEXT
+# ============================================================================
+type BranchInfo {
+    tenantId: ID!
+    tenantName: String!
+    tenantType: TenantType!
+    role: String!
+    permissions: [String!]!
+}
+
+type UserContext {
+    userId: ID!
+    email: String!
+    name: String
+    activeBranch: BranchInfo
+    branches: [BranchInfo!]!
+}
+
+# ============================================================================
+# QUERIES
+# ============================================================================
+extend type Query {
+    # Tenant
+    tenant(id: ID!): Tenant
+    myTenant: Tenant
+    tenantSettings: TenantSettings
+
+    # Profile
+    myProfile: UserProfile
+
+    # SSO
+    me: UserContext!
+    myBranches: [BranchInfo!]!
+
+    # Permissions
+    permissions: [Permission!]!
+    roles: [Role!]!
+}
+
+# ============================================================================
+# MUTATIONS
+# ============================================================================
+extend type Mutation {
+    # Tenant
+    createTenant(input: CreateTenantInput!): Tenant!
+    updateTenant(id: ID!, input: UpdateTenantInput!): Tenant!
+
+    # Users
+    inviteUser(input: InviteUserInput!): Boolean!
+    updateProfile(input: UpdateProfileInput!): UserProfile!
+    updateTenantSettings(input: TenantSettingsInput!): TenantSettings!
+
+    # SSO
+    switchBranch(tenantId: ID!): UserContext!
+}
+
+# ============================================================================
+# INPUTS
+# ============================================================================
+input CreateTenantInput {
+    name: String!
+    type: TenantType!
+    domain: String
+}
+
+input UpdateTenantInput {
+    name: String
+    domain: String
+    settings: JSON
+}
+
+input InviteUserInput {
+    email: String!
+    role: String!
+}
+
+input UpdateProfileInput {
+    title: String
+    department: String
+    timezone: String
+    locale: String
+    notificationPrefs: JSON
+}
+
+input TenantSettingsInput {
+    businessHours: JSON
+    paymentConfig: JSON
+    notificationConfig: JSON
+    branding: JSON
+    features: JSON
+}
+
+scalar JSON
+
+extend type User @key(fields: "id") {
+    id: ID! @external
+    profile: UserProfile
+}

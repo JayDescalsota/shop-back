@@ -1,0 +1,321 @@
+extend schema
+    @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key", "@shareable", "@external"])
+
+# ============================================================================
+# VEHICLE REFERENCE
+# ============================================================================
+type VehicleMake @key(fields: "id") {
+    id: ID!
+    name: String!
+    slug: String!
+    logoUrl: String
+    country: String
+    foundedYear: Int
+    isActive: Boolean!
+    models: [VehicleModel!]!
+}
+
+type VehicleModel @key(fields: "id") {
+    id: ID!
+    makeId: ID!
+    name: String!
+    slug: String!
+    yearStart: Int
+    yearEnd: Int
+    vehicleType: String
+    trimLevels: JSON
+    isActive: Boolean!
+    make: VehicleMake!
+}
+
+# ============================================================================
+# SERVICE REFERENCE
+# ============================================================================
+type ServiceType @key(fields: "id") {
+    id: ID!
+    tenantId: ID
+    code: String!
+    name: String!
+    description: String
+    category: String!
+    estimatedHours: Float
+    isGlobal: Boolean!
+    isActive: Boolean!
+}
+
+type DiagnosticCode @key(fields: "id") {
+    id: ID!
+    code: String!
+    system: String!
+    description: String!
+    severity: String
+    possibleCauses: JSON
+    recommendedActions: JSON
+    relatedCodes: [String!]
+    isActive: Boolean!
+}
+
+# ============================================================================
+# PARTS REFERENCE
+# ============================================================================
+type PartCategory @key(fields: "id") {
+    id: ID!
+    code: String!
+    name: String!
+    description: String
+    parentId: ID
+    icon: String
+    sortOrder: Int!
+    children: [PartCategory!]
+    parent: PartCategory
+}
+
+type PartCompatibility {
+    id: ID!
+    partSku: String!
+    partName: String!
+    makeId: ID
+    modelId: ID
+    yearStart: Int
+    yearEnd: Int
+    engineType: String
+    position: String
+    notes: String
+    isOem: Boolean!
+}
+
+# ============================================================================
+# ENUMERATION TYPES
+# ============================================================================
+type FuelType {
+    id: ID!
+    code: String!
+    name: String!
+    description: String
+    sortOrder: Int!
+}
+
+type TransmissionType {
+    id: ID!
+    code: String!
+    name: String!
+    description: String
+    sortOrder: Int!
+}
+
+type EngineType {
+    id: ID!
+    code: String!
+    name: String!
+    description: String
+    fuelType: String
+    sortOrder: Int!
+}
+
+# ============================================================================
+# LABOR & GEO
+# ============================================================================
+type LaborRateTier @key(fields: "id") {
+    id: ID!
+    tenantId: ID
+    name: String!
+    hourlyRate: Float!
+    description: String
+    isGlobal: Boolean!
+    isActive: Boolean!
+}
+
+type Country {
+    code: String!
+    name: String!
+    phoneCode: String!
+    currency: String!
+    timezone: String!
+    isActive: Boolean!
+}
+
+type Currency {
+    code: String!
+    name: String!
+    symbol: String!
+    decimalPlaces: Int!
+    isActive: Boolean!
+}
+
+# ============================================================================
+# QUERIES
+# ============================================================================
+extend type Query {
+    # Vehicle lookups
+    vehicleMakes(search: String, isActive: Boolean): [VehicleMake!]!
+    vehicleMake(id: ID!): VehicleMake
+    vehicleModels(makeId: ID!, search: String, year: Int, vehicleType: String): [VehicleModel!]!
+    vehicleModel(id: ID!): VehicleModel
+    searchVehicles(query: String!, limit: Int): [VehicleModel!]!
+
+    # Service lookups
+    serviceTypes(category: String, isGlobal: Boolean, tenantId: ID): [ServiceType!]!
+    serviceType(id: ID!): ServiceType
+    diagnosticCodes(system: String, search: String): [DiagnosticCode!]!
+    diagnosticCode(id: ID!): DiagnosticCode
+    searchDiagnosticCodes(query: String!): [DiagnosticCode!]!
+
+    # Parts lookups
+    partCategories(parentId: ID): [PartCategory!]!
+    partCategory(id: ID!): PartCategory
+    checkPartCompatibility(partSku: String!, makeId: ID, modelId: ID, year: Int): [PartCompatibility!]!
+
+    # Enumeration lookups
+    fuelTypes: [FuelType!]!
+    transmissionTypes: [TransmissionType!]!
+    engineTypes: [EngineType!]!
+
+    # Labor & Geo
+    laborRateTiers(tenantId: ID, isGlobal: Boolean): [LaborRateTier!]!
+    laborRateTier(id: ID!): LaborRateTier
+    countries: [Country!]!
+    currencies: [Currency!]!
+}
+
+# ============================================================================
+# MUTATIONS
+# ============================================================================
+extend type Mutation {
+    # Vehicle mutations
+    createVehicleMake(input: CreateVehicleMakeInput!): VehicleMake!
+    updateVehicleMake(id: ID!, input: UpdateVehicleMakeInput!): VehicleMake!
+    createVehicleModel(input: CreateVehicleModelInput!): VehicleModel!
+    updateVehicleModel(id: ID!, input: UpdateVehicleModelInput!): VehicleModel!
+
+    # Service mutations
+    createServiceType(input: CreateServiceTypeInput!): ServiceType!
+    updateServiceType(id: ID!, input: UpdateServiceTypeInput!): ServiceType!
+    createDiagnosticCode(input: CreateDiagnosticCodeInput!): DiagnosticCode!
+    updateDiagnosticCode(id: ID!, input: UpdateDiagnosticCodeInput!): DiagnosticCode!
+
+    # Parts mutations
+    createPartCategory(input: CreatePartCategoryInput!): PartCategory!
+    addPartCompatibility(input: AddPartCompatibilityInput!): PartCompatibility!
+
+    # Labor mutations
+    createLaborRateTier(input: CreateLaborRateTierInput!): LaborRateTier!
+    updateLaborRateTier(id: ID!, input: UpdateLaborRateTierInput!): LaborRateTier!
+}
+
+# ============================================================================
+# INPUTS
+# ============================================================================
+input CreateVehicleMakeInput {
+    name: String!
+    slug: String!
+    logoUrl: String
+    country: String
+    foundedYear: Int
+    sortOrder: Int
+}
+
+input UpdateVehicleMakeInput {
+    name: String
+    slug: String
+    logoUrl: String
+    country: String
+    foundedYear: Int
+    isActive: Boolean
+    sortOrder: Int
+}
+
+input CreateVehicleModelInput {
+    makeId: ID!
+    name: String!
+    slug: String!
+    yearStart: Int
+    yearEnd: Int
+    vehicleType: String
+    trimLevels: JSON
+}
+
+input UpdateVehicleModelInput {
+    name: String
+    slug: String
+    yearStart: Int
+    yearEnd: Int
+    vehicleType: String
+    trimLevels: JSON
+    isActive: Boolean
+}
+
+input CreateServiceTypeInput {
+    tenantId: ID
+    code: String!
+    name: String!
+    description: String
+    category: String!
+    estimatedHours: Float
+    isGlobal: Boolean
+}
+
+input UpdateServiceTypeInput {
+    name: String
+    description: String
+    category: String
+    estimatedHours: Float
+    isActive: Boolean
+}
+
+input CreateDiagnosticCodeInput {
+    code: String!
+    system: String!
+    description: String!
+    severity: String
+    possibleCauses: JSON
+    recommendedActions: JSON
+    relatedCodes: [String!]
+}
+
+input UpdateDiagnosticCodeInput {
+    description: String
+    severity: String
+    possibleCauses: JSON
+    recommendedActions: JSON
+    relatedCodes: [String!]
+    isActive: Boolean
+}
+
+input CreatePartCategoryInput {
+    code: String!
+    name: String!
+    description: String
+    parentId: ID
+    icon: String
+    sortOrder: Int
+}
+
+input AddPartCompatibilityInput {
+    partSku: String!
+    partName: String!
+    makeId: ID
+    modelId: ID
+    yearStart: Int
+    yearEnd: Int
+    engineType: String
+    position: String
+    notes: String
+    isOem: Boolean
+}
+
+input CreateLaborRateTierInput {
+    tenantId: ID
+    name: String!
+    hourlyRate: Float!
+    description: String
+    isGlobal: Boolean
+}
+
+input UpdateLaborRateTierInput {
+    name: String
+    hourlyRate: Float
+    description: String
+    isActive: Boolean
+}
+
+scalar JSON

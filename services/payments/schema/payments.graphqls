@@ -1,0 +1,147 @@
+extend schema
+    @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key", "@shareable", "@external"])
+
+type Payment @key(fields: "id") {
+    id: ID!
+    tenantId: ID!
+    amount: Float!
+    currency: String!
+    status: PaymentStatus!
+    paymentMethod: String
+    provider: String
+    providerPaymentId: String
+    referenceType: String!
+    referenceId: ID!
+    description: String
+    paidAt: String
+    createdAt: String!
+}
+
+enum PaymentStatus {
+    PENDING
+    PROCESSING
+    SUCCEEDED
+    FAILED
+    REFUNDED
+    PARTIALLY_REFUNDED
+}
+
+type Invoice @key(fields: "id") {
+    id: ID!
+    tenantId: ID!
+    invoiceNumber: String!
+    status: InvoiceStatus!
+    billToId: ID!
+    lineItems: JSON!
+    subtotal: Float!
+    taxAmount: Float!
+    discountAmount: Float!
+    totalAmount: Float!
+    amountPaid: Float!
+    amountDue: Float!
+    dueDate: String
+    notes: String
+    createdAt: String!
+}
+
+enum InvoiceStatus {
+    DRAFT
+    SENT
+    OVERDUE
+    PAID
+    CANCELLED
+    REFUNDED
+}
+
+type PaymentMethod @key(fields: "id") {
+    id: ID!
+    tenantId: ID!
+    userId: ID!
+    provider: String!
+    type: String!
+    lastFour: String
+    expiryMonth: Int
+    expiryYear: Int
+    isDefault: Boolean!
+}
+
+type Subscription @key(fields: "id") {
+    id: ID!
+    tenantId: ID!
+    plan: String!
+    status: String!
+    currentPeriodStart: String!
+    currentPeriodEnd: String!
+}
+
+extend type Query {
+    payment(id: ID!): Payment
+    payments(referenceType: String, referenceId: ID, page: Int, perPage: Int): PaymentConnection!
+    invoice(id: ID!): Invoice
+    invoices(status: InvoiceStatus, billToId: ID, page: Int, perPage: Int): InvoiceConnection!
+    myPaymentMethods: [PaymentMethod!]!
+    mySubscription: Subscription
+}
+
+extend type Mutation {
+    processPayment(input: ProcessPaymentInput!): Payment!
+    refundPayment(id: ID!, amount: Float, reason: String): Payment!
+    createInvoice(input: CreateInvoiceInput!): Invoice!
+    sendInvoice(id: ID!): Invoice!
+    recordPayment(invoiceId: ID!, amount: Float!, method: String!): Invoice!
+    addPaymentMethod(input: AddPaymentMethodInput!): PaymentMethod!
+    setDefaultPaymentMethod(id: ID!): PaymentMethod!
+    removePaymentMethod(id: ID!): Boolean!
+}
+
+type PaymentConnection {
+    items: [Payment!]!
+    total: Int!
+    page: Int!
+    perPage: Int!
+}
+
+type InvoiceConnection {
+    items: [Invoice!]!
+    total: Int!
+    page: Int!
+    perPage: Int!
+}
+
+input ProcessPaymentInput {
+    amount: Float!
+    currency: String
+    paymentMethodId: ID
+    referenceType: String!
+    referenceId: ID!
+    description: String
+    metadata: JSON
+}
+
+input CreateInvoiceInput {
+    billToId: ID!
+    billToType: String!
+    lineItems: [InvoiceLineItemInput!]!
+    taxAmount: Float
+    discountAmount: Float
+    dueDate: String
+    notes: String
+}
+
+input InvoiceLineItemInput {
+    description: String!
+    quantity: Float!
+    unitPrice: Float!
+}
+
+input AddPaymentMethodInput {
+    provider: String!
+    providerMethodId: String!
+    type: String!
+    lastFour: String
+    expiryMonth: Int
+    expiryYear: Int
+    setDefault: Boolean
+}
+
+scalar JSON

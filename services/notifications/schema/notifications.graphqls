@@ -1,0 +1,63 @@
+extend schema
+    @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key", "@shareable", "@external"])
+
+type Notification {
+    id: ID!
+    tenantId: ID!
+    userId: ID!
+    type: String!
+    title: String!
+    body: String
+    data: JSON
+    isRead: Boolean!
+    readAt: String
+    createdAt: String!
+}
+
+type NotificationTemplate {
+    id: ID!
+    tenantId: ID
+    type: String!
+    channel: String!
+    subject: String
+    template: String!
+}
+
+extend type Query {
+    notifications(userId: ID!, isRead: Boolean, page: Int, perPage: Int): NotificationConnection!
+    unreadCount(userId: ID!): Int!
+    notificationTemplates(type: String, channel: String): [NotificationTemplate!]!
+}
+
+extend type Mutation {
+    markAsRead(id: ID!): Notification!
+    markAllAsRead(userId: ID!): Boolean!
+    deleteNotification(id: ID!): Boolean!
+    sendNotification(input: SendNotificationInput!): Notification!
+    createNotificationTemplate(input: CreateNotificationTemplateInput!): NotificationTemplate!
+}
+
+type NotificationConnection {
+    items: [Notification!]!
+    total: Int!
+    page: Int!
+    perPage: Int!
+}
+
+input SendNotificationInput {
+    userId: ID!
+    type: String!
+    title: String!
+    body: String
+    data: JSON
+}
+
+input CreateNotificationTemplateInput {
+    type: String!
+    channel: String!
+    subject: String
+    template: String!
+    tenantId: ID
+}
+
+scalar JSON

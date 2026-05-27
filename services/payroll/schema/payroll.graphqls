@@ -1,0 +1,131 @@
+extend schema
+    @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key", "@shareable", "@external"])
+
+type Employee @key(fields: "id") {
+    id: ID!
+    tenantId: ID!
+    userId: ID!
+    employeeId: String
+    department: String
+    position: String
+    hireDate: String!
+    employmentType: String!
+    salary: Float
+    hourlyRate: Float
+    payFrequency: String!
+    isActive: Boolean!
+}
+
+type EmployeePayroll {
+    id: ID!
+    employeeId: ID!
+    periodStart: String!
+    periodEnd: String!
+    basePay: Float!
+    overtimePay: Float!
+    bonuses: Float!
+    deductions: Float!
+    taxes: Float!
+    netPay: Float!
+    status: String!
+    paidAt: String
+}
+
+type TimeShift {
+    id: ID!
+    employeeId: ID!
+    date: String!
+    startTime: String!
+    endTime: String!
+    breakMin: Int!
+    totalHours: Float!
+    notes: String
+}
+
+type AttendanceRecord {
+    id: ID!
+    employeeId: ID!
+    date: String!
+    clockIn: String!
+    clockOut: String
+    status: String!
+    notes: String
+}
+
+type LeaveRequest {
+    id: ID!
+    employeeId: ID!
+    leaveType: String!
+    startDate: String!
+    endDate: String!
+    totalDays: Int!
+    reason: String
+    status: String!
+    approvedBy: ID
+}
+
+extend type Query {
+    employee(id: ID!): Employee
+    employees(department: String, isActive: Boolean, page: Int, perPage: Int): EmployeeConnection!
+    myPayroll(employeeId: ID!, year: Int!, month: Int!): EmployeePayroll
+    payrollHistory(employeeId: ID!, year: Int!): [EmployeePayroll!]!
+    shifts(employeeId: ID!, from: String!, to: String!): [TimeShift!]!
+    attendance(employeeId: ID!, from: String!, to: String!): [AttendanceRecord!]!
+    leaveRequests(employeeId: ID, status: String): [LeaveRequest!]!
+}
+
+extend type Mutation {
+    createEmployee(input: CreateEmployeeInput!): Employee!
+    updateEmployee(id: ID!, input: UpdateEmployeeInput!): Employee!
+    clockIn(employeeId: ID!): AttendanceRecord!
+    clockOut(id: ID!): AttendanceRecord!
+    createShift(input: CreateShiftInput!): TimeShift!
+    requestLeave(input: RequestLeaveInput!): LeaveRequest!
+    approveLeave(id: ID!): LeaveRequest!
+    rejectLeave(id: ID!): LeaveRequest!
+    processPayroll(employeeId: ID!, periodStart: String!, periodEnd: String!): EmployeePayroll!
+}
+
+type EmployeeConnection {
+    items: [Employee!]!
+    total: Int!
+    page: Int!
+    perPage: Int!
+}
+
+input CreateEmployeeInput {
+    userId: ID!
+    employeeId: String
+    department: String
+    position: String
+    hireDate: String!
+    employmentType: String!
+    salary: Float
+    hourlyRate: Float
+    payFrequency: String
+}
+
+input UpdateEmployeeInput {
+    department: String
+    position: String
+    salary: Float
+    hourlyRate: Float
+    isActive: Boolean
+}
+
+input CreateShiftInput {
+    employeeId: ID!
+    date: String!
+    startTime: String!
+    endTime: String!
+    breakMin: Int
+    notes: String
+}
+
+input RequestLeaveInput {
+    employeeId: ID!
+    leaveType: String!
+    startDate: String!
+    endDate: String!
+    reason: String
+}
