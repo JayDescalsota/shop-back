@@ -81,10 +81,14 @@ func (h *RESTHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	name := ""
+	if req.Name != nil {
+		name = *req.Name
+	}
 	input := model.RegisterInput{
 		Email:    req.Email,
 		Password: req.Password,
-		Name:     req.Name,
+		Name:     name,
 	}
 
 	resp, err := h.auth.Register(r.Context(), input, req.App)

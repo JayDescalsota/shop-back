@@ -1,149 +1,166 @@
 extend schema
     @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key", "@shareable", "@external"])
 
-type RepairOrder @key(fields: "id") {
+type Appointment @key(fields: "id") {
     id: ID!
     tenantId: ID!
-    shopId: ID!
-    bookingId: ID
-    customerId: ID!
-    vehicleId: ID!
-    status: RepairOrderStatus!
-    odometerIn: Int
-    odometerOut: Int
-    customerComplaint: String
-    technicianNotes: String
-    diagnosis: String
-    estimatedCost: Float
-    actualCost: Float
-    taxAmount: Float
-    totalAmount: Float
-    discountAmount: Float
-    startedAt: String
-    completedAt: String
+    shopId: String!
+    customerName: String!
+    customerPhone: String
+    customerEmail: String
+    vehicleMake: String!
+    vehicleModel: String!
+    vehicleYear: Int
+    vehiclePlate: String
+    serviceType: String!
+    description: String
+    status: String!
+    scheduledDate: String!
+    startTime: String!
+    endTime: String!
+    assignedMechanic: String
+    notes: String
     createdAt: String!
     updatedAt: String!
 }
 
-enum RepairOrderStatus {
-    DRAFT
-    ESTIMATE
-    APPROVED
-    IN_PROGRESS
-    COMPLETED
-    INVOICED
-    PAID
-    CANCELLED
-}
-
-type RepairLineItem {
-    id: ID!
-    repairOrderId: ID!
-    itemType: String!
-    description: String!
-    quantity: Float!
-    unitPrice: Float!
-    totalPrice: Float!
-    partId: ID
-    technicianId: ID
-}
-
-type JobCard {
-    id: ID!
-    repairOrderId: ID!
-    assignedTo: ID!
-    task: String!
-    status: String!
-    notes: String
-    startedAt: String
-    completedAt: String
-    estimatedHours: Float
-    actualHours: Float
-}
-
-type Diagnostic {
-    id: ID!
-    repairOrderId: ID!
-    diagnosticCode: String
-    description: String!
-    severity: String
-    recommendedAction: String
-    performedBy: ID
+type AppointmentConnection {
+    items: [Appointment!]!
+    total: Int!
 }
 
 extend type Query {
-    repairOrder(id: ID!): RepairOrder
-    repairOrders(shopId: ID!, status: RepairOrderStatus, customerId: ID, page: Int, perPage: Int): RepairOrderConnection!
-    repairLineItems(repairOrderId: ID!): [RepairLineItem!]!
-    jobCards(repairOrderId: ID!): [JobCard!]!
-    diagnostics(repairOrderId: ID!): [Diagnostic!]!
+    appointment(id: ID!): Appointment
+    appointments(tenantId: ID!): AppointmentConnection!
 }
 
 extend type Mutation {
-    createRepairOrder(input: CreateRepairOrderInput!): RepairOrder!
-    updateRepairOrder(id: ID!, input: UpdateRepairOrderInput!): RepairOrder!
-    addLineItem(repairOrderId: ID!, input: AddLineItemInput!): RepairLineItem!
-    removeLineItem(id: ID!): Boolean!
-    createJobCard(repairOrderId: ID!, input: CreateJobCardInput!): JobCard!
-    updateJobCard(id: ID!, input: UpdateJobCardInput!): JobCard!
-    addDiagnostic(repairOrderId: ID!, input: AddDiagnosticInput!): Diagnostic!
-    approveEstimate(id: ID!): RepairOrder!
-    startRepair(id: ID!): RepairOrder!
-    completeRepair(id: ID!): RepairOrder!
-    invoiceRepair(id: ID!): RepairOrder!
+    createAppointment(input: CreateAppointmentInput!): Appointment!
+    updateAppointmentStatus(id: ID!, status: String!): Appointment!
+    deleteAppointment(id: ID!): Boolean!
 }
 
-type RepairOrderConnection {
-    items: [RepairOrder!]!
-    total: Int!
-    page: Int!
-    perPage: Int!
-}
-
-input CreateRepairOrderInput {
-    shopId: ID!
-    bookingId: ID
-    customerId: ID!
-    vehicleId: ID!
-    customerComplaint: String
-    odometerIn: Int
-}
-
-input UpdateRepairOrderInput {
-    customerComplaint: String
-    technicianNotes: String
-    diagnosis: String
-    odometerIn: Int
-    odometerOut: Int
-    discountAmount: Float
-}
-
-input AddLineItemInput {
-    itemType: String!
-    description: String!
-    quantity: Float
-    unitPrice: Float!
-    partId: ID
-    technicianId: ID
-}
-
-input CreateJobCardInput {
-    repairOrderId: ID!
-    assignedTo: ID!
-    task: String!
-    estimatedHours: Float
-}
-
-input UpdateJobCardInput {
-    status: String
+type Customer @key(fields: "id") {
+    id: ID!
+    tenantId: ID!
+    name: String!
+    email: String
+    phone: String
+    address: String
+    city: String
+    state: String
+    zip: String
     notes: String
-    actualHours: Float
+    totalVehicles: Int!
+    totalVisits: Int!
+    totalSpent: Float!
+    lastVisit: String
+    status: String!
+    createdAt: String!
+    updatedAt: String!
 }
 
-input AddDiagnosticInput {
-    repairOrderId: ID!
-    diagnosticCode: String
-    description: String!
-    severity: String
-    recommendedAction: String
+type CustomerConnection {
+    items: [Customer!]!
+    total: Int!
+}
+
+input CreateCustomerInput {
+    tenantId: ID!
+    name: String!
+    email: String
+    phone: String
+    address: String
+    city: String
+    state: String
+    zip: String
+    notes: String
+}
+
+input UpdateCustomerInput {
+    name: String
+    email: String
+    phone: String
+    address: String
+    city: String
+    state: String
+    zip: String
+    notes: String
+    status: String
+}
+
+type Vehicle @key(fields: "id") {
+    id: ID!
+    tenantId: ID!
+    customerId: ID
+    make: String!
+    model: String!
+    year: Int
+    vin: String
+    licensePlate: String
+    color: String
+    notes: String
+    createdAt: String!
+    updatedAt: String!
+}
+
+type VehicleConnection {
+    items: [Vehicle!]!
+    total: Int!
+}
+
+input CreateVehicleInput {
+    tenantId: ID!
+    customerId: ID
+    make: String!
+    model: String!
+    year: Int
+    vin: String
+    licensePlate: String
+    color: String
+    notes: String
+}
+
+input UpdateVehicleInput {
+    make: String
+    model: String
+    year: Int
+    vin: String
+    licensePlate: String
+    color: String
+    notes: String
+}
+
+extend type Query {
+    customer(id: ID!): Customer
+    customers(tenantId: ID!): CustomerConnection!
+    vehicle(id: ID!): Vehicle
+    vehicles(tenantId: ID!): VehicleConnection!
+}
+
+extend type Mutation {
+    createCustomer(input: CreateCustomerInput!): Customer!
+    updateCustomer(id: ID!, input: UpdateCustomerInput!): Customer!
+    deleteCustomer(id: ID!): Boolean!
+    createVehicle(input: CreateVehicleInput!): Vehicle!
+    updateVehicle(id: ID!, input: UpdateVehicleInput!): Vehicle!
+    deleteVehicle(id: ID!): Boolean!
+}
+
+input CreateAppointmentInput {
+    tenantId: ID!
+    customerName: String!
+    customerPhone: String
+    customerEmail: String
+    vehicleMake: String!
+    vehicleModel: String!
+    vehicleYear: Int
+    vehiclePlate: String
+    serviceType: String!
+    description: String
+    scheduledDate: String!
+    startTime: String!
+    endTime: String!
+    assignedMechanic: String
+    notes: String
 }

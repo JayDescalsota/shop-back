@@ -6,8 +6,8 @@ import (
 	"github.com/uptrace/bun"
 )
 
-type VehicleMake struct {
-	bun.BaseModel `bun:"table:vehicle_makes"`
+type 	VehicleMake struct {
+	bun.BaseModel `bun:"table:lookup.vehicle_makes"`
 
 	ID          string    `bun:"id,pk,type:uuid" json:"id"`
 	Name        string    `bun:"name,notnull" json:"name"`
@@ -24,8 +24,8 @@ type VehicleMake struct {
 	Models []*VehicleModel `bun:"rel:has-many,join:id=make_id" json:"models,omitempty"`
 }
 
-type VehicleModel struct {
-	bun.BaseModel `bun:"table:vehicle_models"`
+type 	VehicleModel struct {
+	bun.BaseModel `bun:"table:lookup.vehicle_models"`
 
 	ID          string    `bun:"id,pk,type:uuid" json:"id"`
 	MakeID      string    `bun:"make_id,notnull,type:uuid" json:"makeId"`
@@ -43,8 +43,8 @@ type VehicleModel struct {
 	Make *VehicleMake `bun:"rel:has-one,join:make_id=id" json:"make,omitempty"`
 }
 
-type ServiceType struct {
-	bun.BaseModel `bun:"table:service_types"`
+type 	ServiceType struct {
+	bun.BaseModel `bun:"table:lookup.service_types"`
 
 	ID             string    `bun:"id,pk,type:uuid" json:"id"`
 	TenantID       *string   `bun:"tenant_id,type:uuid" json:"tenantId"`
@@ -60,8 +60,8 @@ type ServiceType struct {
 	UpdatedAt      time.Time `bun:"updated_at,notnull" json:"updatedAt"`
 }
 
-type DiagnosticCode struct {
-	bun.BaseModel `bun:"table:diagnostic_codes"`
+type 	DiagnosticCode struct {
+	bun.BaseModel `bun:"table:lookup.diagnostic_codes"`
 
 	ID                 string    `bun:"id,pk,type:uuid" json:"id"`
 	Code               string    `bun:"code,notnull" json:"code"`
@@ -76,8 +76,8 @@ type DiagnosticCode struct {
 	UpdatedAt          time.Time `bun:"updated_at,notnull" json:"updatedAt"`
 }
 
-type PartCategory struct {
-	bun.BaseModel `bun:"table:part_categories"`
+type 	PartCategory struct {
+	bun.BaseModel `bun:"table:lookup.part_categories"`
 
 	ID          string    `bun:"id,pk,type:uuid" json:"id"`
 	Code        string    `bun:"code,notnull" json:"code"`
@@ -93,8 +93,8 @@ type PartCategory struct {
 	Children []*PartCategory `bun:"rel:has-many,join:id=parent_id" json:"children,omitempty"`
 }
 
-type PartCompatibility struct {
-	bun.BaseModel `bun:"table:part_compatibility"`
+type 	PartCompatibility struct {
+	bun.BaseModel `bun:"table:lookup.part_compatibility"`
 
 	ID         string    `bun:"id,pk,type:uuid" json:"id"`
 	PartSKU    string    `bun:"part_sku,notnull" json:"partSku"`
@@ -111,8 +111,8 @@ type PartCompatibility struct {
 	UpdatedAt  time.Time `bun:"updated_at,notnull" json:"updatedAt"`
 }
 
-type FuelType struct {
-	bun.BaseModel `bun:"table:fuel_types"`
+type 	FuelType struct {
+	bun.BaseModel `bun:"table:lookup.fuel_types"`
 
 	ID          string `bun:"id,pk,type:uuid" json:"id"`
 	Code        string `bun:"code,notnull" json:"code"`
@@ -122,8 +122,8 @@ type FuelType struct {
 	SortOrder   int    `bun:"sort_order,notnull" json:"sortOrder"`
 }
 
-type TransmissionType struct {
-	bun.BaseModel `bun:"table:transmission_types"`
+type 	TransmissionType struct {
+	bun.BaseModel `bun:"table:lookup.transmission_types"`
 
 	ID          string `bun:"id,pk,type:uuid" json:"id"`
 	Code        string `bun:"code,notnull" json:"code"`
@@ -133,8 +133,8 @@ type TransmissionType struct {
 	SortOrder   int    `bun:"sort_order,notnull" json:"sortOrder"`
 }
 
-type EngineType struct {
-	bun.BaseModel `bun:"table:engine_types"`
+type 	EngineType struct {
+	bun.BaseModel `bun:"table:lookup.engine_types"`
 
 	ID          string  `bun:"id,pk,type:uuid" json:"id"`
 	Code        string  `bun:"code,notnull" json:"code"`
@@ -145,8 +145,8 @@ type EngineType struct {
 	SortOrder   int     `bun:"sort_order,notnull" json:"sortOrder"`
 }
 
-type LaborRateTier struct {
-	bun.BaseModel `bun:"table:labor_rate_tiers"`
+type 	LaborRateTier struct {
+	bun.BaseModel `bun:"table:lookup.labor_rate_tiers"`
 
 	ID          string    `bun:"id,pk,type:uuid" json:"id"`
 	TenantID    *string   `bun:"tenant_id,type:uuid" json:"tenantId"`
@@ -159,8 +159,8 @@ type LaborRateTier struct {
 	UpdatedAt   time.Time `bun:"updated_at,notnull" json:"updatedAt"`
 }
 
-type Country struct {
-	bun.BaseModel `bun:"table:countries"`
+type 	Country struct {
+	bun.BaseModel `bun:"table:lookup.countries"`
 
 	Code      string `bun:"code,pk" json:"code"`
 	Name      string `bun:"name,notnull" json:"name"`
@@ -171,8 +171,8 @@ type Country struct {
 	SortOrder int    `bun:"sort_order,notnull" json:"sortOrder"`
 }
 
-type Currency struct {
-	bun.BaseModel `bun:"table:currencies"`
+type 	Currency struct {
+	bun.BaseModel `bun:"table:lookup.currencies"`
 
 	Code          string `bun:"code,pk" json:"code"`
 	Name          string `bun:"name,notnull" json:"name"`

@@ -106,7 +106,7 @@ type BranchInfo struct {
 	Permissions []string   `json:"permissions"`
 }
 
-// UserContext is the full SSO context returned by me / switchBranch.
+// UserContext is the full SSO context returned by myContext / switchBranch.
 type UserContext struct {
 	UserID       string      `json:"userId"`
 	Email        string      `json:"email"`

@@ -28,8 +28,8 @@ func (r *Resolver) GraphQLHandler(w http.ResponseWriter, req *http.Request) {
 	q := strings.TrimSpace(gqlReq.Query)
 
 	switch {
-	case strings.Contains(q, "me"):
-		r.handleMe(w, req)
+	case strings.Contains(q, "myContext"):
+		r.handleMyContext(w, req)
 	case strings.Contains(q, "myBranches"):
 		r.handleMyBranches(w, req)
 	case strings.Contains(q, "switchBranch"):
@@ -70,7 +70,7 @@ func (r *Resolver) GraphQLHandler(w http.ResponseWriter, req *http.Request) {
 
 // ---- SSO ----
 
-func (r *Resolver) handleMe(w http.ResponseWriter, req *http.Request) {
+func (r *Resolver) handleMyContext(w http.ResponseWriter, req *http.Request) {
 	userID := middleware.GetUserID(req.Context())
 	if userID == "" {
 		service.WriteGQLError(w, 401, "authentication required")
@@ -85,7 +85,7 @@ func (r *Resolver) handleMe(w http.ResponseWriter, req *http.Request) {
 		service.WriteGQLError(w, 500, err.Error())
 		return
 	}
-	service.WriteGQL(w, map[string]interface{}{"me": toMap(ctx)})
+	service.WriteGQL(w, map[string]interface{}{"myContext": toMap(ctx)})
 }
 
 func (r *Resolver) handleMyBranches(w http.ResponseWriter, req *http.Request) {

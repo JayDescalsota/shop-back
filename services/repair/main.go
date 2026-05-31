@@ -1,23 +1,32 @@
 package main
 
 import (
-	"net/http"
+	"context"
+	"log"
 
 	"backend/packages/service"
+	"backend/services/repair/generated"
+	"backend/services/repair/repository"
+	"backend/services/repair/resolver"
+	repairservice "backend/services/repair/service"
 
+	gqlhandler "github.com/99designs/gqlgen/graphql/handler"
 	"github.com/go-chi/chi/v5"
 )
 
 func main() {
 	service.Serve("repair", func(r chi.Router, deps *service.Dependencies) {
-		r.Post("/graphql", handleRepair(deps))
-		r.Post("/query", handleRepair(deps))
-	})
-}
+		repo := repository.New(deps.DB)
+		svc := repairservice.New(repo)
 
-func handleRepair(deps *service.Dependencies) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"data":{"__typename":"Query"}}`))
-	}
+		if err := svc.Migrate(context.Background()); err != nil {
+			log.Printf("warning: migration: %v", err)
+		}
+
+		resv := resolver.New(svc)
+		srv := gqlhandler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: resv}))
+
+		r.Post("/graphql", srv.ServeHTTP)
+		r.Post("/query", srv.ServeHTTP)
+	})
 }

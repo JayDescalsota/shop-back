@@ -101,7 +101,7 @@ extend type Query {
     myProfile: UserProfile
 
     # SSO
-    me: UserContext!
+    myContext: UserContext!
     myBranches: [BranchInfo!]!
 
     # Permissions

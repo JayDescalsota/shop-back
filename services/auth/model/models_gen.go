@@ -3,8 +3,10 @@
 package model
 
 type AuthResponse struct {
-	Token string `json:"token"`
-	User  *User  `json:"user"`
+	Token        string `json:"token"`
+	RefreshToken string `json:"refreshToken"`
+	ExpiresAt    string `json:"expiresAt"`
+	User         *User  `json:"user"`
 }
 
 type LoginInput struct {
@@ -21,13 +23,29 @@ type Query struct {
 type RegisterInput struct {
 	Email    string  `json:"email"`
 	Password string  `json:"password"`
-	Name     *string `json:"name,omitempty"`
+	Name     string  `json:"name"`
+	Phone    *string `json:"phone,omitempty"`
 }
 
 type User struct {
-	ID    string  `json:"id"`
-	Email string  `json:"email"`
-	Name  *string `json:"name,omitempty"`
+	ID            string  `json:"id"`
+	Email         string  `json:"email"`
+	Name          string  `json:"name"`
+	Phone         *string `json:"phone,omitempty"`
+	Role          string  `json:"role"`
+	IsActive      bool    `json:"isActive"`
+	EmailVerified bool    `json:"emailVerified"`
+	LastLoginAt   *string `json:"lastLoginAt,omitempty"`
+	CreatedAt     string  `json:"createdAt"`
+	UpdatedAt     string  `json:"updatedAt"`
 }
 
 func (User) IsEntity() {}
+
+type UserConnection struct {
+	Items      []*User `json:"items"`
+	Total      int     `json:"total"`
+	Page       int     `json:"page"`
+	PerPage    int     `json:"perPage"`
+	TotalPages int     `json:"totalPages"`
+}

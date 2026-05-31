@@ -90,7 +90,7 @@ func (s *authService) Register(ctx context.Context, input model.RegisterInput, a
 		ID:        id,
 		Email:     input.Email,
 		Password:  string(hashed),
-		Name:      input.Name,
+		Name:      &input.Name,
 		Role:      role,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
@@ -349,11 +349,15 @@ func (s *authService) SeedUsers(ctx context.Context) error {
 }
 
 func toGraphQLUser(user *repository.User) *model.User {
-	return &model.User{
+	u := &model.User{
 		ID:    user.ID,
 		Email: user.Email,
-		Name:  user.Name,
+		Role:  user.Role,
 	}
+	if user.Name != nil {
+		u.Name = *user.Name
+	}
+	return u
 }
 
 func toTenantInfo(tenants []repository.Tenant) []middleware.TenantInfo {
