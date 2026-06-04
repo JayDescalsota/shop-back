@@ -1,4 +1,4 @@
-SERVICES := gateway auth users vehicles bookings repair inventory parts-marketplace payments payroll lookup notifications search
+SERVICES := gateway auth users vehicles bookings repair inventory parts-marketplace payments payroll lookup notifications search staff
 BUILD_DIR := build
 
 .PHONY: all build clean dev dev-down test lint migrate-up migrate-down seed help

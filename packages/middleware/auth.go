@@ -57,6 +57,9 @@ func JWT(secret string) func(http.Handler) http.Handler {
 			ctx = SetTenantID(ctx, claims.TenantID)
 			ctx = SetUserRole(ctx, claims.Role)
 			ctx = SetEmail(ctx, claims.Email)
+			if len(claims.App) > 0 {
+				ctx = SetAppID(ctx, claims.App[0])
+			}
 			r = r.WithContext(ctx)
 
 			next.ServeHTTP(w, r)

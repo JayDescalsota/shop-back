@@ -14,6 +14,12 @@ func TenantIsolation(next http.Handler) http.Handler {
 			ctx := SetTenantID(r.Context(), tenantID)
 			r = r.WithContext(ctx)
 		}
+		if appID := r.Header.Get("X-App-Id"); appID != "" {
+			r = r.WithContext(SetAppID(r.Context(), appID))
+		}
+		if branchID := r.Header.Get("X-Branch-Id"); branchID != "" {
+			r = r.WithContext(SetBranchID(r.Context(), branchID))
+		}
 		next.ServeHTTP(w, r)
 	})
 }

@@ -38,8 +38,8 @@ func (s *Service) CreateAppointment(ctx context.Context, input model.CreateAppoi
 	if input.ScheduledDate == "" {
 		return nil, errors.New("scheduledDate is required")
 	}
-	if input.StartTime == "" || input.EndTime == "" {
-		return nil, errors.New("startTime and endTime are required")
+	if input.StartTime == "" {
+		return nil, errors.New("startTime is required")
 	}
 
 	scheduledDate, err := time.Parse("2006-01-02", input.ScheduledDate)
@@ -54,9 +54,9 @@ func (s *Service) CreateAppointment(ctx context.Context, input model.CreateAppoi
 		VehicleModel:  input.VehicleModel,
 		ServiceType:   input.ServiceType,
 		ScheduledDate: scheduledDate,
-		StartTime:     input.StartTime,
-		EndTime:       input.EndTime,
-		Status:        "pending",
+		StartTime: input.StartTime,
+		EndTime:   input.EndTime,
+		Status:        "queued",
 	}
 
 	if input.CustomerPhone != nil {
@@ -74,11 +74,17 @@ func (s *Service) CreateAppointment(ctx context.Context, input model.CreateAppoi
 	if input.Description != nil {
 		repoApt.Description = *input.Description
 	}
+	if input.Bay != nil {
+		repoApt.Bay = input.Bay
+	}
 	if input.AssignedMechanic != nil {
 		repoApt.AssignedMechanic = *input.AssignedMechanic
 	}
 	if input.Notes != nil {
 		repoApt.Notes = *input.Notes
+	}
+	if input.ShopID != nil {
+		repoApt.ShopID = input.ShopID
 	}
 	if err := s.repo.Create(ctx, repoApt); err != nil {
 		return nil, fmt.Errorf("create appointment: %w", err)
@@ -113,6 +119,68 @@ func (s *Service) ListAppointments(ctx context.Context, tenantID string) (*model
 		Items: items,
 		Total: len(items),
 	}, nil
+}
+
+func (s *Service) UpdateAppointment(ctx context.Context, id string, input model.UpdateAppointmentInput) (*model.Appointment, error) {
+	repoApt, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if input.CustomerName != nil {
+		repoApt.CustomerName = *input.CustomerName
+	}
+	if input.CustomerPhone != nil {
+		repoApt.CustomerPhone = *input.CustomerPhone
+	}
+	if input.CustomerEmail != nil {
+		repoApt.CustomerEmail = *input.CustomerEmail
+	}
+	if input.VehicleMake != nil {
+		repoApt.VehicleMake = *input.VehicleMake
+	}
+	if input.VehicleModel != nil {
+		repoApt.VehicleModel = *input.VehicleModel
+	}
+	if input.VehicleYear != nil {
+		repoApt.VehicleYear = input.VehicleYear
+	}
+	if input.VehiclePlate != nil {
+		repoApt.VehiclePlate = *input.VehiclePlate
+	}
+	if input.ServiceType != nil {
+		repoApt.ServiceType = *input.ServiceType
+	}
+	if input.Description != nil {
+		repoApt.Description = *input.Description
+	}
+	if input.AssignedMechanic != nil {
+		repoApt.AssignedMechanic = *input.AssignedMechanic
+	}
+	if input.Bay != nil {
+		repoApt.Bay = input.Bay
+	}
+	if input.Notes != nil {
+		repoApt.Notes = *input.Notes
+	}
+	if input.Status != nil {
+		newStatus := *input.Status
+		if newStatus == "on_going" {
+			if repoApt.AssignedMechanic == "" {
+				return nil, errors.New("mechanic must be assigned before starting work")
+			}
+			if repoApt.Bay == nil || *repoApt.Bay == "" {
+				return nil, errors.New("bay must be assigned before starting work")
+			}
+		}
+		repoApt.Status = newStatus
+	}
+
+	if err := s.repo.Update(ctx, repoApt); err != nil {
+		return nil, fmt.Errorf("update appointment: %w", err)
+	}
+
+	return toModel(repoApt), nil
 }
 
 func (s *Service) UpdateAppointmentStatus(ctx context.Context, id, status string) (*model.Appointment, error) {
@@ -290,6 +358,12 @@ func (s *Service) CreateVehicle(ctx context.Context, input model.CreateVehicleIn
 	if input.Notes != nil {
 		v.Notes = *input.Notes
 	}
+	if input.Status != nil {
+		v.Status = *input.Status
+	}
+	if input.RepairStatus != nil {
+		v.RepairStatus = *input.RepairStatus
+	}
 
 	if err := s.repo.CreateVehicle(ctx, v); err != nil {
 		return nil, fmt.Errorf("create vehicle: %w", err)
@@ -353,6 +427,12 @@ func (s *Service) UpdateVehicle(ctx context.Context, id string, input model.Upda
 	if input.Notes != nil {
 		repoV.Notes = *input.Notes
 	}
+	if input.Status != nil {
+		repoV.Status = *input.Status
+	}
+	if input.RepairStatus != nil {
+		repoV.RepairStatus = *input.RepairStatus
+	}
 
 	if err := s.repo.UpdateVehicle(ctx, repoV); err != nil {
 		return nil, fmt.Errorf("update vehicle: %w", err)
@@ -372,13 +452,188 @@ func (s *Service) FindVehicleByID(ctx context.Context, id string) (*model.Vehicl
 	return s.GetVehicle(ctx, id)
 }
 
+func (s *Service) CreateAssignment(ctx context.Context, input model.CreateStaffAssignmentInput) (*model.StaffAssignment, error) {
+	if input.TenantID == "" {
+		return nil, errors.New("tenantId is required")
+	}
+	if input.AppointmentID == "" {
+		return nil, errors.New("appointmentId is required")
+	}
+	if input.StaffID == "" {
+		return nil, errors.New("staffId is required")
+	}
+	if input.StaffName == "" {
+		return nil, errors.New("staffName is required")
+	}
+
+	repoA := &repository.StaffAssignment{
+		TenantID:      input.TenantID,
+		AppointmentID: input.AppointmentID,
+		StaffID:       input.StaffID,
+		StaffName:     input.StaffName,
+		Role:          input.Role,
+		Status:        "assigned",
+		Notes:         deref(input.Notes),
+	}
+
+	if err := s.repo.CreateAssignment(ctx, repoA); err != nil {
+		return nil, fmt.Errorf("create assignment: %w", err)
+	}
+
+	return assignmentToModel(repoA), nil
+}
+
+func (s *Service) GetAssignment(ctx context.Context, id string) (*model.StaffAssignment, error) {
+	repoA, err := s.repo.GetAssignmentByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return assignmentToModel(repoA), nil
+}
+
+func (s *Service) ListAssignmentsByAppointment(ctx context.Context, appointmentID string) ([]*model.StaffAssignment, error) {
+	items, err := s.repo.ListAssignmentsByAppointment(ctx, appointmentID)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*model.StaffAssignment, len(items))
+	for i, a := range items {
+		ca := a
+		result[i] = assignmentToModel(&ca)
+	}
+	return result, nil
+}
+
+func (s *Service) UpdateAssignment(ctx context.Context, id string, input model.UpdateStaffAssignmentInput) (*model.StaffAssignment, error) {
+	repoA, err := s.repo.GetAssignmentByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if input.Status != nil && *input.Status != "" {
+		repoA.Status = *input.Status
+		now := time.Now()
+		switch *input.Status {
+		case "in_progress":
+			repoA.StartedAt = &now
+		case "completed":
+			repoA.CompletedAt = &now
+		}
+	}
+	if input.TotalMinutes != nil {
+		repoA.TotalMinutes = *input.TotalMinutes
+	}
+	if input.Notes != nil {
+		repoA.Notes = *input.Notes
+	}
+
+	if err := s.repo.UpdateAssignment(ctx, repoA); err != nil {
+		return nil, fmt.Errorf("update assignment: %w", err)
+	}
+
+	return assignmentToModel(repoA), nil
+}
+
+func (s *Service) DeleteAssignment(ctx context.Context, id string) (bool, error) {
+	if err := s.repo.DeleteAssignment(ctx, id); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (s *Service) ReassignAssignment(ctx context.Context, id string, targetAppointmentID string) (*model.StaffAssignment, error) {
+	repoA, err := s.repo.GetAssignmentByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	repoA.AppointmentID = targetAppointmentID
+	repoA.Status = "assigned"
+	now := time.Now()
+	repoA.AssignedAt = now
+	repoA.StartedAt = nil
+	repoA.CompletedAt = nil
+	repoA.TotalMinutes = 0
+
+	if err := s.repo.UpdateAssignment(ctx, repoA); err != nil {
+		return nil, fmt.Errorf("reassign assignment: %w", err)
+	}
+
+	return assignmentToModel(repoA), nil
+}
+
+func (s *Service) StartAssignment(ctx context.Context, id string) (*model.StaffAssignment, error) {
+	repoA, err := s.repo.GetAssignmentByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	repoA.Status = "in_progress"
+	now := time.Now()
+	repoA.StartedAt = &now
+
+	if err := s.repo.UpdateAssignment(ctx, repoA); err != nil {
+		return nil, fmt.Errorf("start assignment: %w", err)
+	}
+
+	return assignmentToModel(repoA), nil
+}
+
+func (s *Service) CompleteAssignment(ctx context.Context, id string, totalMinutes int) (*model.StaffAssignment, error) {
+	repoA, err := s.repo.GetAssignmentByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	repoA.Status = "completed"
+	now := time.Now()
+	repoA.CompletedAt = &now
+	repoA.TotalMinutes = totalMinutes
+
+	if err := s.repo.UpdateAssignment(ctx, repoA); err != nil {
+		return nil, fmt.Errorf("complete assignment: %w", err)
+	}
+
+	return assignmentToModel(repoA), nil
+}
+
+func (s *Service) FindAssignmentByID(ctx context.Context, id string) (*model.StaffAssignment, error) {
+	return s.GetAssignment(ctx, id)
+}
+
+func assignmentToModel(a *repository.StaffAssignment) *model.StaffAssignment {
+	var startedAt, completedAt *string
+	if a.StartedAt != nil {
+		s := a.StartedAt.Format(time.RFC3339)
+		startedAt = &s
+	}
+	if a.CompletedAt != nil {
+		s := a.CompletedAt.Format(time.RFC3339)
+		completedAt = &s
+	}
+	return &model.StaffAssignment{
+		ID:            a.ID,
+		TenantID:      a.TenantID,
+		AppointmentID: a.AppointmentID,
+		StaffID:       a.StaffID,
+		StaffName:     a.StaffName,
+		Role:          a.Role,
+		Status:        a.Status,
+		AssignedAt:    a.AssignedAt.Format(time.RFC3339),
+		StartedAt:     startedAt,
+		CompletedAt:   completedAt,
+		TotalMinutes:  &a.TotalMinutes,
+		Notes:         strPtr(a.Notes),
+	}
+}
+
 func toModel(r *repository.Appointment) *model.Appointment {
 	scheduledDate := r.ScheduledDate.Format("2006-01-02")
 
 	return &model.Appointment{
 		ID:               r.ID,
 		TenantID:         r.TenantID,
-		ShopID:           r.ShopID,
+		ShopID:           coalesce(r.ShopID),
 		CustomerName:     r.CustomerName,
 		CustomerPhone:    strPtr(r.CustomerPhone),
 		CustomerEmail:    strPtr(r.CustomerEmail),
@@ -393,6 +648,7 @@ func toModel(r *repository.Appointment) *model.Appointment {
 		StartTime:        r.StartTime,
 		EndTime:          r.EndTime,
 		AssignedMechanic: strPtr(r.AssignedMechanic),
+		Bay:             r.Bay,
 		Notes:            strPtr(r.Notes),
 		CreatedAt:        r.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:        r.UpdatedAt.Format(time.RFC3339),
@@ -429,9 +685,18 @@ func vehicleToModel(v *repository.Vehicle) *model.Vehicle {
 		LicensePlate: strPtr(v.LicensePlate),
 		Color:        strPtr(v.Color),
 		Notes:        strPtr(v.Notes),
+		Status:       v.Status,
+		RepairStatus: v.RepairStatus,
 		CreatedAt:    v.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:    v.UpdatedAt.Format(time.RFC3339),
 	}
+}
+
+func deref(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
 }
 
 func strPtr(s string) *string {
@@ -439,4 +704,11 @@ func strPtr(s string) *string {
 		return nil
 	}
 	return &s
+}
+
+func coalesce(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
 }

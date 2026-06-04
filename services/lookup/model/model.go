@@ -52,6 +52,7 @@ type 	ServiceType struct {
 	Name           string    `bun:"name,notnull" json:"name"`
 	Description    *string   `bun:"description" json:"description"`
 	Category       string    `bun:"category,notnull" json:"category"`
+	System         string    `bun:"system,notnull" json:"system"`
 	EstimatedHours *float64  `bun:"estimated_hours" json:"estimatedHours"`
 	IsGlobal       bool      `bun:"is_global,notnull" json:"isGlobal"`
 	IsActive       bool      `bun:"is_active,notnull" json:"isActive"`

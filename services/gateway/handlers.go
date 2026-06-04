@@ -58,6 +58,9 @@ func supergraphHandler(subgraphURLs map[string]string, rdb *goredis.Client) http
 
 		authHeader := r.Header.Get("Authorization")
 		tenantID := r.Header.Get("X-Tenant-Id")
+		userID := r.Header.Get("X-User-Id")
+		appID := r.Header.Get("X-App-Id")
+		branchID := r.Header.Get("X-Branch-Id")
 
 		results := make(map[string]*GraphQLResponse)
 		var mu sync.Mutex
@@ -73,6 +76,9 @@ func supergraphHandler(subgraphURLs map[string]string, rdb *goredis.Client) http
 				targetReq.Header.Set("Content-Type", "application/json")
 				targetReq.Header.Set("Authorization", authHeader)
 				targetReq.Header.Set("X-Tenant-Id", tenantID)
+				targetReq.Header.Set("X-User-Id", userID)
+				targetReq.Header.Set("X-App-Id", appID)
+				targetReq.Header.Set("X-Branch-Id", branchID)
 				targetReq.Header.Set("X-Request-Id", requestID)
 
 				resp, err := client.Do(targetReq)
@@ -122,6 +128,9 @@ func mergeResults(results map[string]*GraphQLResponse) map[string]interface{} {
 			}
 		}
 		for _, e := range resp.Errors {
+			if len(e.Message) > 12 && (e.Message[:12] == "Unknown type" || e.Message[:12] == "Cannot query") {
+				continue
+			}
 			allErrors = append(allErrors, map[string]interface{}{
 				"message": e.Message,
 				"service": svc,

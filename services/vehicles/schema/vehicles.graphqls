@@ -19,6 +19,8 @@ type Vehicle @key(fields: "id") {
     purchasePrice: Float
     imageUrl: String
     notes: String
+    status: String!
+    repairStatus: String!
     createdAt: String!
     updatedAt: String!
 }

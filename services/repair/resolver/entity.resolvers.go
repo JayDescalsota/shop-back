@@ -9,6 +9,7 @@ import (
 	"backend/services/repair/generated"
 	"backend/services/repair/model"
 	"context"
+	"fmt"
 )
 
 // FindAppointmentByID is the resolver for the findAppointmentByID field.
@@ -21,10 +22,17 @@ func (r *entityResolver) FindCustomerByID(ctx context.Context, id string) (*mode
 	return r.svc.FindCustomerByID(ctx, id)
 }
 
+// FindStaffAssignmentByID is the resolver for the findStaffAssignmentByID field.
+func (r *entityResolver) FindStaffAssignmentByID(ctx context.Context, id string) (*model.StaffAssignment, error) {
+	panic(fmt.Errorf("not implemented: FindStaffAssignmentByID - findStaffAssignmentByID"))
+}
+
+// FindVehicleByID is the resolver for the findVehicleByID field.
 func (r *entityResolver) FindVehicleByID(ctx context.Context, id string) (*model.Vehicle, error) {
 	return r.svc.FindVehicleByID(ctx, id)
 }
 
+// Entity returns generated.EntityResolver implementation.
 func (r *Resolver) Entity() generated.EntityResolver { return &entityResolver{r} }
 
 type entityResolver struct{ *Resolver }

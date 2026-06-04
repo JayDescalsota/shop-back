@@ -191,6 +191,25 @@ func (ec *executionContext) resolveEntity(
 
 			return entity, nil
 		}
+	case "StaffAssignment":
+		resolverName, err := entityResolverNameForStaffAssignment(ctx, rep)
+		if err != nil {
+			return nil, fmt.Errorf(`finding resolver for Entity "StaffAssignment": %w`, err)
+		}
+		switch resolverName {
+
+		case "findStaffAssignmentByID":
+			id0, err := ec.unmarshalNID2string(ctx, rep["id"])
+			if err != nil {
+				return nil, fmt.Errorf(`unmarshalling param 0 for findStaffAssignmentByID(): %w`, err)
+			}
+			entity, err := ec.Resolvers.Entity().FindStaffAssignmentByID(ctx, id0)
+			if err != nil {
+				return nil, fmt.Errorf(`resolving Entity "StaffAssignment": %w`, err)
+			}
+
+			return entity, nil
+		}
 	case "Vehicle":
 		resolverName, err := entityResolverNameForVehicle(ctx, rep)
 		if err != nil {
@@ -303,6 +322,41 @@ func entityResolverNameForCustomer(ctx context.Context, rep EntityRepresentation
 		return "findCustomerByID", nil
 	}
 	return "", fmt.Errorf("%w for Customer due to %v", ErrTypeNotFound,
+		errors.Join(entityResolverErrs...).Error())
+}
+
+func entityResolverNameForStaffAssignment(ctx context.Context, rep EntityRepresentation) (string, error) {
+	// we collect errors because a later entity resolver may work fine
+	// when an entity has multiple keys
+	entityResolverErrs := []error{}
+	for {
+		var (
+			m   EntityRepresentation
+			val any
+			ok  bool
+		)
+		_ = val
+		// if all of the KeyFields values for this resolver are null,
+		// we shouldn't use use it
+		allNull := true
+		m = rep
+		val, ok = m["id"]
+		if !ok {
+			entityResolverErrs = append(entityResolverErrs,
+				fmt.Errorf("%w due to missing Key Field \"id\" for StaffAssignment", ErrTypeNotFound))
+			break
+		}
+		if allNull {
+			allNull = val == nil
+		}
+		if allNull {
+			entityResolverErrs = append(entityResolverErrs,
+				fmt.Errorf("%w due to all null value KeyFields for StaffAssignment", ErrTypeNotFound))
+			break
+		}
+		return "findStaffAssignmentByID", nil
+	}
+	return "", fmt.Errorf("%w for StaffAssignment due to %v", ErrTypeNotFound,
 		errors.Join(entityResolverErrs...).Error())
 }
 

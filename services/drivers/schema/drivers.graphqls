@@ -1,0 +1,77 @@
+extend schema
+    @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key", "@shareable", "@external"])
+
+type Driver @key(fields: "id") {
+    id: ID!
+    tenantId: ID!
+    name: String!
+    email: String
+    phone: String
+    role: String!
+    licenseNumber: String
+    licenseClass: String
+    licenseExpiry: String
+    dateOfBirth: String
+    address: String
+    emergencyContact: String
+    emergencyPhone: String
+    status: String!
+    assignedVehicleId: ID
+    notes: String
+    hireDate: String
+    createdAt: String!
+    updatedAt: String!
+}
+
+type DriverConnection {
+    items: [Driver!]!
+    total: Int!
+}
+
+extend type Query {
+    driver(id: ID!): Driver
+    drivers(tenantId: ID): DriverConnection!
+}
+
+extend type Mutation {
+    createDriver(input: CreateDriverInput!): Driver!
+    updateDriver(id: ID!, input: UpdateDriverInput!): Driver!
+    deleteDriver(id: ID!): Boolean!
+}
+
+input CreateDriverInput {
+    tenantId: ID!
+    name: String!
+    email: String
+    phone: String
+    role: String
+    licenseNumber: String
+    licenseClass: String
+    licenseExpiry: String
+    dateOfBirth: String
+    address: String
+    emergencyContact: String
+    emergencyPhone: String
+    status: String
+    assignedVehicleId: ID
+    notes: String
+    hireDate: String
+}
+
+input UpdateDriverInput {
+    name: String
+    email: String
+    phone: String
+    role: String
+    licenseNumber: String
+    licenseClass: String
+    licenseExpiry: String
+    dateOfBirth: String
+    address: String
+    emergencyContact: String
+    emergencyPhone: String
+    status: String
+    assignedVehicleId: ID
+    notes: String
+    hireDate: String
+}

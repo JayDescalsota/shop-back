@@ -18,8 +18,9 @@ type Appointment struct {
 	Status           string  `json:"status"`
 	ScheduledDate    string  `json:"scheduledDate"`
 	StartTime        string  `json:"startTime"`
-	EndTime          string  `json:"endTime"`
+	EndTime          *string `json:"endTime,omitempty"`
 	AssignedMechanic *string `json:"assignedMechanic,omitempty"`
+	Bay              *string `json:"bay,omitempty"`
 	Notes            *string `json:"notes,omitempty"`
 	CreatedAt        string  `json:"createdAt"`
 	UpdatedAt        string  `json:"updatedAt"`
@@ -45,9 +46,11 @@ type CreateAppointmentInput struct {
 	Description      *string `json:"description,omitempty"`
 	ScheduledDate    string  `json:"scheduledDate"`
 	StartTime        string  `json:"startTime"`
-	EndTime          string  `json:"endTime"`
+	EndTime          *string `json:"endTime,omitempty"`
 	AssignedMechanic *string `json:"assignedMechanic,omitempty"`
+	Bay              *string `json:"bay,omitempty"`
 	Notes            *string `json:"notes,omitempty"`
+	ShopID           *string `json:"shopId,omitempty"`
 }
 
 type CreateCustomerInput struct {
@@ -62,6 +65,15 @@ type CreateCustomerInput struct {
 	Notes    *string `json:"notes,omitempty"`
 }
 
+type CreateStaffAssignmentInput struct {
+	TenantID      string  `json:"tenantId"`
+	AppointmentID string  `json:"appointmentId"`
+	StaffID       string  `json:"staffId"`
+	StaffName     string  `json:"staffName"`
+	Role          string  `json:"role"`
+	Notes         *string `json:"notes,omitempty"`
+}
+
 type CreateVehicleInput struct {
 	TenantID     string  `json:"tenantId"`
 	CustomerID   *string `json:"customerId,omitempty"`
@@ -72,6 +84,8 @@ type CreateVehicleInput struct {
 	LicensePlate *string `json:"licensePlate,omitempty"`
 	Color        *string `json:"color,omitempty"`
 	Notes        *string `json:"notes,omitempty"`
+	Status       *string `json:"status,omitempty"`
+	RepairStatus *string `json:"repairStatus,omitempty"`
 }
 
 type Customer struct {
@@ -107,6 +121,44 @@ type Mutation struct {
 type Query struct {
 }
 
+type StaffAssignment struct {
+	ID            string  `json:"id"`
+	TenantID      string  `json:"tenantId"`
+	AppointmentID string  `json:"appointmentId"`
+	StaffID       string  `json:"staffId"`
+	StaffName     string  `json:"staffName"`
+	Role          string  `json:"role"`
+	Status        string  `json:"status"`
+	AssignedAt    string  `json:"assignedAt"`
+	StartedAt     *string `json:"startedAt,omitempty"`
+	CompletedAt   *string `json:"completedAt,omitempty"`
+	TotalMinutes  *int    `json:"totalMinutes,omitempty"`
+	Notes         *string `json:"notes,omitempty"`
+}
+
+func (StaffAssignment) IsEntity() {}
+
+type StaffAssignmentConnection struct {
+	Items []*StaffAssignment `json:"items"`
+	Total int                `json:"total"`
+}
+
+type UpdateAppointmentInput struct {
+	CustomerName     *string `json:"customerName,omitempty"`
+	CustomerPhone    *string `json:"customerPhone,omitempty"`
+	CustomerEmail    *string `json:"customerEmail,omitempty"`
+	VehicleMake      *string `json:"vehicleMake,omitempty"`
+	VehicleModel     *string `json:"vehicleModel,omitempty"`
+	VehicleYear      *int    `json:"vehicleYear,omitempty"`
+	VehiclePlate     *string `json:"vehiclePlate,omitempty"`
+	ServiceType      *string `json:"serviceType,omitempty"`
+	Description      *string `json:"description,omitempty"`
+	AssignedMechanic *string `json:"assignedMechanic,omitempty"`
+	Bay              *string `json:"bay,omitempty"`
+	Notes            *string `json:"notes,omitempty"`
+	Status           *string `json:"status,omitempty"`
+}
+
 type UpdateCustomerInput struct {
 	Name    *string `json:"name,omitempty"`
 	Email   *string `json:"email,omitempty"`
@@ -119,6 +171,12 @@ type UpdateCustomerInput struct {
 	Status  *string `json:"status,omitempty"`
 }
 
+type UpdateStaffAssignmentInput struct {
+	Status       *string `json:"status,omitempty"`
+	TotalMinutes *int    `json:"totalMinutes,omitempty"`
+	Notes        *string `json:"notes,omitempty"`
+}
+
 type UpdateVehicleInput struct {
 	Make         *string `json:"make,omitempty"`
 	Model        *string `json:"model,omitempty"`
@@ -127,6 +185,9 @@ type UpdateVehicleInput struct {
 	LicensePlate *string `json:"licensePlate,omitempty"`
 	Color        *string `json:"color,omitempty"`
 	Notes        *string `json:"notes,omitempty"`
+	CustomerID   *string `json:"customerId,omitempty"`
+	Status       *string `json:"status,omitempty"`
+	RepairStatus *string `json:"repairStatus,omitempty"`
 }
 
 type Vehicle struct {
@@ -140,6 +201,8 @@ type Vehicle struct {
 	LicensePlate *string `json:"licensePlate,omitempty"`
 	Color        *string `json:"color,omitempty"`
 	Notes        *string `json:"notes,omitempty"`
+	Status       string  `json:"status"`
+	RepairStatus string  `json:"repairStatus"`
 	CreatedAt    string  `json:"createdAt"`
 	UpdatedAt    string  `json:"updatedAt"`
 }

@@ -1,0 +1,32 @@
+package main
+
+import (
+	"context"
+	"log"
+
+	"backend/packages/service"
+	"backend/services/drivers/generated"
+	"backend/services/drivers/repository"
+	"backend/services/drivers/resolver"
+	driverservice "backend/services/drivers/service"
+
+	gqlhandler "github.com/99designs/gqlgen/graphql/handler"
+	"github.com/go-chi/chi/v5"
+)
+
+func main() {
+	service.Serve("drivers", func(r chi.Router, deps *service.Dependencies) {
+		repo := repository.New(deps.DB)
+		svc := driverservice.New(repo)
+
+		if err := svc.Migrate(context.Background()); err != nil {
+			log.Printf("warning: migration: %v", err)
+		}
+
+		resv := resolver.New(svc)
+		srv := gqlhandler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: resv}))
+
+		r.Post("/graphql", srv.ServeHTTP)
+		r.Post("/query", srv.ServeHTTP)
+	})
+}

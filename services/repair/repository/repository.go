@@ -44,6 +44,8 @@ type Vehicle struct {
 	LicensePlate string    `bun:"license_plate"`
 	Color        string    `bun:"color"`
 	Notes        string    `bun:"notes"`
+	Status       string    `bun:"status,notnull,default:'running'"`
+	RepairStatus string    `bun:"repair_status,notnull,default:'none'"`
 	CreatedAt    time.Time `bun:"created_at,notnull"`
 	UpdatedAt    time.Time `bun:"updated_at,notnull"`
 }
@@ -53,7 +55,7 @@ type Appointment struct {
 
 	ID               string    `bun:"id,pk,type:uuid"`
 	TenantID         string    `bun:"tenant_id,notnull,type:uuid"`
-	ShopID           string    `bun:"shop_id,notnull"`
+	ShopID           *string   `bun:"shop_id,nullzero"`
 	CustomerName     string    `bun:"customer_name,notnull"`
 	CustomerPhone    string    `bun:"customer_phone"`
 	CustomerEmail    string    `bun:"customer_email"`
@@ -66,8 +68,9 @@ type Appointment struct {
 	Status           string    `bun:"status,notnull"`
 	ScheduledDate    time.Time `bun:"scheduled_date,notnull,type:date"`
 	StartTime        string    `bun:"start_time,notnull,type:time"`
-	EndTime          string    `bun:"end_time,notnull,type:time"`
+	EndTime          *string   `bun:"end_time,nullzero,type:time"`
 	AssignedMechanic string    `bun:"assigned_mechanic"`
+	Bay              *string   `bun:"bay,nullzero"`
 	Notes            string    `bun:"notes"`
 	CreatedAt        time.Time `bun:"created_at,notnull"`
 	UpdatedAt        time.Time `bun:"updated_at,notnull"`
@@ -110,9 +113,13 @@ func (r *Repository) Migrate(ctx context.Context) error {
 			license_plate TEXT,
 			color TEXT,
 			notes TEXT,
+			status TEXT NOT NULL DEFAULT 'running',
+			repair_status TEXT NOT NULL DEFAULT 'none',
 			created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 			updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 		);
+		ALTER TABLE repair.vehicles ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'running';
+		ALTER TABLE repair.vehicles ADD COLUMN IF NOT EXISTS repair_status TEXT NOT NULL DEFAULT 'none';
 		CREATE TABLE IF NOT EXISTS repair.appointments (
 			id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
 			tenant_id UUID NOT NULL,
@@ -134,6 +141,22 @@ func (r *Repository) Migrate(ctx context.Context) error {
 			notes TEXT,
 			created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 			updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+		);
+		CREATE TABLE IF NOT EXISTS repair.staff_assignments (
+			id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+			tenant_id UUID NOT NULL,
+			appointment_id UUID NOT NULL REFERENCES repair.appointments(id) ON DELETE CASCADE,
+			staff_id UUID NOT NULL,
+			staff_name TEXT NOT NULL,
+			role TEXT NOT NULL DEFAULT 'mechanic',
+			status TEXT NOT NULL DEFAULT 'assigned',
+			assigned_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+			started_at TIMESTAMPTZ,
+			completed_at TIMESTAMPTZ,
+			total_minutes INTEGER DEFAULT 0,
+			notes TEXT,
+			created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+			updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 		)
 	`)
 	return err
@@ -144,10 +167,10 @@ func (r *Repository) Create(ctx context.Context, a *Appointment) error {
 		a.ID = uuid.New().String()
 	}
 	if a.Status == "" {
-		a.Status = "pending"
+		a.Status = "queued"
 	}
-	if a.ShopID == "" {
-		a.ShopID = "default"
+	if a.ShopID == nil || *a.ShopID == "" {
+		a.ShopID = strPtr("default")
 	}
 	now := time.Now()
 	a.CreatedAt = now
@@ -238,6 +261,12 @@ func (r *Repository) CreateVehicle(ctx context.Context, v *Vehicle) error {
 	if v.ID == "" {
 		v.ID = uuid.New().String()
 	}
+	if v.Status == "" {
+		v.Status = "running"
+	}
+	if v.RepairStatus == "" {
+		v.RepairStatus = "none"
+	}
 	now := time.Now()
 	v.CreatedAt = now
 	v.UpdatedAt = now
@@ -275,4 +304,82 @@ func (r *Repository) UpdateVehicle(ctx context.Context, v *Vehicle) error {
 func (r *Repository) DeleteVehicle(ctx context.Context, id string) error {
 	_, err := r.db.NewDelete().Model(&Vehicle{}).Where("id = ?", id).Exec(ctx)
 	return err
+}
+
+type StaffAssignment struct {
+	bun.BaseModel `bun:"table:repair.staff_assignments"`
+
+	ID            string    `bun:"id,pk,type:uuid"`
+	TenantID      string    `bun:"tenant_id,notnull,type:uuid"`
+	AppointmentID string    `bun:"appointment_id,notnull,type:uuid"`
+	StaffID       string    `bun:"staff_id,notnull,type:uuid"`
+	StaffName     string    `bun:"staff_name,notnull"`
+	Role          string    `bun:"role,notnull"`
+	Status        string    `bun:"status,notnull"`
+	AssignedAt    time.Time `bun:"assigned_at,notnull"`
+	StartedAt     *time.Time `bun:"started_at,nullzero"`
+	CompletedAt   *time.Time `bun:"completed_at,nullzero"`
+	TotalMinutes  int       `bun:"total_minutes"`
+	Notes         string    `bun:"notes"`
+	CreatedAt     time.Time `bun:"created_at,notnull"`
+	UpdatedAt     time.Time `bun:"updated_at,notnull"`
+}
+
+func (r *Repository) CreateAssignment(ctx context.Context, a *StaffAssignment) error {
+	if a.ID == "" {
+		a.ID = uuid.New().String()
+	}
+	if a.Status == "" {
+		a.Status = "assigned"
+	}
+	now := time.Now()
+	a.AssignedAt = now
+	a.CreatedAt = now
+	a.UpdatedAt = now
+	_, err := r.db.NewInsert().Model(a).Exec(ctx)
+	return err
+}
+
+func (r *Repository) GetAssignmentByID(ctx context.Context, id string) (*StaffAssignment, error) {
+	a := &StaffAssignment{}
+	err := r.db.NewSelect().Model(a).Where("id = ?", id).Scan(ctx)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("get assignment: %w", err)
+	}
+	return a, nil
+}
+
+func (r *Repository) ListAssignmentsByAppointment(ctx context.Context, appointmentID string) ([]StaffAssignment, error) {
+	var as []StaffAssignment
+	err := r.db.NewSelect().Model(&as).
+		Where("appointment_id = ?", appointmentID).
+		Order("assigned_at ASC").
+		Scan(ctx)
+	return as, err
+}
+
+func (r *Repository) ListActiveAssignmentsByStaff(ctx context.Context, staffID string) ([]StaffAssignment, error) {
+	var as []StaffAssignment
+	err := r.db.NewSelect().Model(&as).
+		Where("staff_id = ? AND status IN ('assigned', 'in_progress')", staffID).
+		Scan(ctx)
+	return as, err
+}
+
+func (r *Repository) UpdateAssignment(ctx context.Context, a *StaffAssignment) error {
+	a.UpdatedAt = time.Now()
+	_, err := r.db.NewUpdate().Model(a).Where("id = ?", a.ID).Exec(ctx)
+	return err
+}
+
+func (r *Repository) DeleteAssignment(ctx context.Context, id string) error {
+	_, err := r.db.NewDelete().Model(&StaffAssignment{}).Where("id = ?", id).Exec(ctx)
+	return err
+}
+
+func strPtr(s string) *string {
+	return &s
 }

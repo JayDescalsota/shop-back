@@ -38,6 +38,7 @@ type ServiceType @key(fields: "id") {
     name: String!
     description: String
     category: String!
+    system: String!
     estimatedHours: Float
     isGlobal: Boolean!
     isActive: Boolean!
@@ -250,6 +251,7 @@ input CreateServiceTypeInput {
     name: String!
     description: String
     category: String!
+    system: String!
     estimatedHours: Float
     isGlobal: Boolean
 }
@@ -258,6 +260,7 @@ input UpdateServiceTypeInput {
     name: String
     description: String
     category: String
+    system: String
     estimatedHours: Float
     isActive: Boolean
 }

@@ -22,7 +22,7 @@ func createUUID() string {
 }
 
 func (r *Repository) GetVehicleMakes(ctx context.Context, search string, isActive *bool) ([]model.VehicleMake, error) {
-	q := r.db.NewSelect().Model(&model.VehicleMake{}).Order("sort_order ASC")
+	q := r.db.NewSelect().Model(&model.VehicleMake{}).Order("name ASC")
 	if search != "" {
 		q = q.Where("name ILIKE ?", "%"+search+"%")
 	}

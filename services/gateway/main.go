@@ -46,6 +46,7 @@ func main() {
 		"payroll":          "http://payroll:8080/query",
 		"lookup":           "http://lookup:8090/query",
 		"search":           "http://search:8080/query",
+		"staff":            "http://staff:8080/query",
 	}
 
 	r := chi.NewRouter()
@@ -58,7 +59,7 @@ func main() {
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-Tenant-Id", "X-Request-Id"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-Tenant-Id", "X-Request-Id", "X-User-Id", "X-App-Id", "X-Branch-Id"},
 		AllowCredentials: true,
 		MaxAge:           86400,
 	}))

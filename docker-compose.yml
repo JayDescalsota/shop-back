@@ -262,6 +262,25 @@ services:
       DB_HOST: postgres
       REDIS_HOST: redis
 
+  staff:
+    container_name: staff
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE: staff
+    ports:
+      - "8092:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_PORT: "8080"
+      SERVICE_NAME: staff
+      DB_HOST: postgres
+      REDIS_HOST: redis
+
   notifications:
     container_name: notifications
     build:

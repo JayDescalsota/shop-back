@@ -1,0 +1,20 @@
+schema:
+  - schema/*.graphqls
+
+exec:
+  filename: generated/generated.go
+  package: generated
+
+federation:
+  filename: generated/federation.go
+  package: generated
+  version: 2.3
+
+model:
+  filename: model/models_gen.go
+  package: model
+
+resolver:
+  layout: follow-schema
+  dir: resolver
+  package: resolver

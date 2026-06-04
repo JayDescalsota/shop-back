@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS lookup.service_types (
     name            TEXT NOT NULL UNIQUE,
     description     TEXT,
     category        TEXT,
+    system          TEXT NOT NULL DEFAULT '',
     estimated_hours DECIMAL(6,2),
     is_global       BOOLEAN NOT NULL DEFAULT true,
     is_active       BOOLEAN NOT NULL DEFAULT true,
@@ -193,32 +194,32 @@ INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type
 SELECT id, unnest(ARRAY['Model 3','Model Y','Model S','Model X']), unnest(ARRAY['model-3','model-y','model-s','model-x']), unnest(ARRAY[2017,2020,2012,2015]), unnest(ARRAY['Sedan','SUV','Sedan','SUV']) FROM lookup.vehicle_makes WHERE name = 'Tesla';
 
 -- Seed: service types
-INSERT INTO lookup.service_types (name, code, category, description, estimated_hours, is_global) VALUES
-    ('Oil Change', 'oil-change', 'Maintenance', 'Engine oil and filter replacement', 1.0, true),
-    ('Tire Rotation', 'tire-rotation', 'Maintenance', 'Rotate tires to ensure even wear', 0.5, true),
-    ('Brake Pad Replacement', 'brake-pads', 'Repair', 'Replace front or rear brake pads', 2.0, true),
-    ('Brake Rotor Replacement', 'brake-rotors', 'Repair', 'Replace warped or worn brake rotors', 2.5, true),
-    ('Engine Diagnostic', 'engine-diag', 'Diagnostic', 'Computer diagnostic scan of engine systems', 1.0, true),
-    ('Check Engine Light', 'cel-diagnostic', 'Diagnostic', 'Diagnose and report check engine light cause', 1.5, true),
-    ('Transmission Service', 'trans-service', 'Maintenance', 'Transmission fluid flush and refill', 2.0, true),
-    ('Coolant Flush', 'coolant-flush', 'Maintenance', 'Drain and refill engine coolant', 1.5, true),
-    ('Battery Replacement', 'battery-replace', 'Repair', 'Replace vehicle battery', 0.5, true),
-    ('Air Filter Replacement', 'air-filter', 'Maintenance', 'Replace engine air filter', 0.25, true),
-    ('Cabin Air Filter', 'cabin-filter', 'Maintenance', 'Replace cabin air filter', 0.25, true),
-    ('Spark Plug Replacement', 'spark-plugs', 'Maintenance', 'Replace spark plugs', 1.5, true),
-    ('Wheel Alignment', 'wheel-alignment', 'Maintenance', 'Align wheels to manufacturer specifications', 1.0, true),
-    ('AC Recharge', 'ac-recharge', 'Repair', 'Recharge air conditioning system', 1.5, true),
-    ('Timing Belt Replacement', 'timing-belt', 'Maintenance', 'Replace timing belt and tensioner', 4.0, true),
-    ('Serpentine Belt Replacement', 'serpentine-belt', 'Maintenance', 'Replace serpentine/accessory belt', 1.0, true),
-    ('Shock/Strut Replacement', 'shock-strut', 'Repair', 'Replace worn shocks or struts', 2.5, true),
-    ('Exhaust System Repair', 'exhaust', 'Repair', 'Repair or replace exhaust components', 2.0, true),
-    ('Fuel System Cleaning', 'fuel-system', 'Maintenance', 'Fuel injector cleaning and carbon removal', 2.0, true),
-    ('State Inspection', 'inspection', 'Inspection', 'Complete state vehicle safety inspection', 1.0, true),
-    ('Multi-Point Inspection', 'mpi', 'Inspection', 'Comprehensive vehicle inspection', 1.0, true),
-    ('Headlight Restoration', 'headlight', 'Detailing', 'Restore foggy or oxidized headlights', 1.0, true),
-    ('Deep Interior Cleaning', 'interior-detail', 'Detailing', 'Complete interior detail and shampoo', 3.0, true),
-    ('Exterior Wash & Wax', 'exterior-detail', 'Detailing', 'Hand wash and wax exterior', 2.0, true)
-ON CONFLICT (name) DO UPDATE SET code=EXCLUDED.code, category=EXCLUDED.category, description=EXCLUDED.description, estimated_hours=EXCLUDED.estimated_hours;
+INSERT INTO lookup.service_types (name, code, category, system, description, estimated_hours, is_global) VALUES
+    ('Oil Change', 'oil-change', 'Maintenance', 'Engine', 'Engine oil and filter replacement', 1.0, true),
+    ('Tire Rotation', 'tire-rotation', 'Maintenance', 'Tires/Wheels', 'Rotate tires to ensure even wear', 0.5, true),
+    ('Brake Pad Replacement', 'brake-pads', 'Repair', 'Brakes', 'Replace front or rear brake pads', 2.0, true),
+    ('Brake Rotor Replacement', 'brake-rotors', 'Repair', 'Brakes', 'Replace warped or worn brake rotors', 2.5, true),
+    ('Engine Diagnostic', 'engine-diag', 'Diagnostic', 'Engine', 'Computer diagnostic scan of engine systems', 1.0, true),
+    ('Check Engine Light', 'cel-diagnostic', 'Diagnostic', 'Engine', 'Diagnose and report check engine light cause', 1.5, true),
+    ('Transmission Service', 'trans-service', 'Maintenance', 'Transmission', 'Transmission fluid flush and refill', 2.0, true),
+    ('Coolant Flush', 'coolant-flush', 'Maintenance', 'Cooling System', 'Drain and refill engine coolant', 1.5, true),
+    ('Battery Replacement', 'battery-replace', 'Repair', 'Electrical', 'Replace vehicle battery', 0.5, true),
+    ('Air Filter Replacement', 'air-filter', 'Maintenance', 'Engine', 'Replace engine air filter', 0.25, true),
+    ('Cabin Air Filter', 'cabin-filter', 'Maintenance', 'HVAC', 'Replace cabin air filter', 0.25, true),
+    ('Spark Plug Replacement', 'spark-plugs', 'Maintenance', 'Engine', 'Replace spark plugs', 1.5, true),
+    ('Wheel Alignment', 'wheel-alignment', 'Maintenance', 'Suspension/Steering', 'Align wheels to manufacturer specifications', 1.0, true),
+    ('AC Recharge', 'ac-recharge', 'Repair', 'HVAC', 'Recharge air conditioning system', 1.5, true),
+    ('Timing Belt Replacement', 'timing-belt', 'Maintenance', 'Engine', 'Replace timing belt and tensioner', 4.0, true),
+    ('Serpentine Belt Replacement', 'serpentine-belt', 'Maintenance', 'Engine', 'Replace serpentine/accessory belt', 1.0, true),
+    ('Shock/Strut Replacement', 'shock-strut', 'Repair', 'Suspension/Steering', 'Replace worn shocks or struts', 2.5, true),
+    ('Exhaust System Repair', 'exhaust', 'Repair', 'Exhaust', 'Repair or replace exhaust components', 2.0, true),
+    ('Fuel System Cleaning', 'fuel-system', 'Maintenance', 'Fuel System', 'Fuel injector cleaning and carbon removal', 2.0, true),
+    ('State Inspection', 'inspection', 'Inspection', 'Maintenance', 'Complete state vehicle safety inspection', 1.0, true),
+    ('Multi-Point Inspection', 'mpi', 'Inspection', 'Maintenance', 'Comprehensive vehicle inspection', 1.0, true),
+    ('Headlight Restoration', 'headlight', 'Detailing', 'Electrical', 'Restore foggy or oxidized headlights', 1.0, true),
+    ('Deep Interior Cleaning', 'interior-detail', 'Detailing', 'Body/Interior', 'Complete interior detail and shampoo', 3.0, true),
+    ('Exterior Wash & Wax', 'exterior-detail', 'Detailing', 'Body/Interior', 'Hand wash and wax exterior', 2.0, true)
+ON CONFLICT (name) DO UPDATE SET code=EXCLUDED.code, category=EXCLUDED.category, system=EXCLUDED.system, description=EXCLUDED.description, estimated_hours=EXCLUDED.estimated_hours;
 
 -- Seed: fuel, transmission, engine types
 INSERT INTO lookup.fuel_types (name, code, sort_order) VALUES ('Gasoline','gasoline',1),('Diesel','diesel',2),('Electric','electric',3),('Hybrid','hybrid',4),('Plug-in Hybrid','plugin-hybrid',5),('Hydrogen','hydrogen',6),('Ethanol','ethanol',7),('Biodiesel','biodiesel',8) ON CONFLICT (name) DO UPDATE SET code=EXCLUDED.code, sort_order=EXCLUDED.sort_order;

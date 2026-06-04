@@ -1,165 +1,155 @@
 #!/usr/bin/env bash
-
-# service - Bash runner script for backend microservices and databases.
-# Compatible with Git Bash, WSL, Linux, and macOS.
-
 set -e
 
-# Logging colors
 BLUE="\033[0;34m"
 GREEN="\033[0;32m"
 RED="\033[0;31m"
 YELLOW="\033[0;33m"
-NC="\033[0m" # No Color
+NC="\033[0m"
 
-log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
-}
+log_info()    { echo -e "${BLUE}[INFO]${NC} $1"; }
+log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
+log_error()   { echo -e "${RED}[ERROR]${NC} $1"; }
+log_warn()    { echo -e "${YELLOW}[WARN]${NC} $1"; }
 
-log_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
-}
-
-log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
-
-log_warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
-}
+SERVICES="gateway auth users vehicles bookings repair inventory parts-marketplace payments payroll lookup notifications search drivers"
 
 show_help() {
-    echo "Usage: ./service <command> [options]"
+    echo "Usage: ./service <command> [service]"
     echo ""
     echo "Commands:"
-    echo "  setup                    Start database containers and run migrations"
-    echo "  start                    Start all services (infra + microservices)"
-    echo "  stop                     Stop all running services"
-    echo "  restart                  Restart all running services"
-    echo "  rebuild <service>        Rebuild and restart a specific service"
-    echo "  rebuild -service <svc>   Rebuild and restart a specific service"
-    echo "  logs [service]           Follow logs for all or a specific service"
-    echo "  status                   Show status of all services"
+    echo "  setup                  Start database containers and run migrations"
+    echo "  start                  Start all services via Docker Compose"
+    echo "  start <service>        Start a specific service locally (build + run)"
+    echo "  stop                   Stop all running services"
+    echo "  restart                Restart all running services"
+    echo "  build                  Build all services locally"
+    echo "  build <service>        Build a specific service locally"
+    echo "  rebuild <service>      Rebuild and restart a specific Docker service"
+    echo "  logs [service]         Follow logs for all or a specific service"
+    echo "  status                 Show status of all services"
     echo ""
     echo "Examples:"
-    echo "  ./service setup"
-    echo "  ./service start"
+    echo "  ./service build"
+    echo "  ./service build auth"
+    echo "  ./service start auth"
     echo "  ./service rebuild auth"
-    echo "  ./service rebuild -service auth"
 }
 
-# Ensure docker compose is installed
-if ! command -v docker &> /dev/null; then
+if ! command -v docker &> /dev/null && [ "$1" != "build" ]; then
     log_error "Docker is not installed or not in PATH."
     exit 1
 fi
 
 COMMAND=$1
-shift || true
+SERVICE=$2
+
+if [ -z "$COMMAND" ] || [ "$COMMAND" = "help" ]; then
+    show_help; exit 0
+fi
+
+is_valid_service() {
+    echo "$SERVICES" | grep -wq "$1"
+}
 
 case "$COMMAND" in
+    build)
+        mkdir -p build
+        if [ -n "$SERVICE" ]; then
+            if ! is_valid_service "$SERVICE"; then
+                log_error "Unknown service '$SERVICE'. Available: $SERVICES"; exit 1
+            fi
+            log_info "Building '$SERVICE'..."
+            go build -ldflags="-w -s" -o "build/$SERVICE" "./services/$SERVICE"
+            log_success "Built build/$SERVICE"
+        else
+            log_info "Building all services..."
+            for svc in $SERVICES; do
+                log_info "  Building '$svc'..."
+                go build -ldflags="-w -s" -o "build/$svc" "./services/$svc"
+                log_success "    Built build/$svc"
+            done
+        fi
+        ;;
+    start)
+        if [ -n "$SERVICE" ]; then
+            if ! is_valid_service "$SERVICE"; then
+                log_error "Unknown service '$SERVICE'. Available: $SERVICES"; exit 1
+            fi
+            BINARY="build/$SERVICE"
+            if [ ! -f "$BINARY" ]; then
+                log_warn "Binary not found. Building first..."
+                "$0" build "$SERVICE"
+            fi
+            if pgrep -x "$SERVICE" > /dev/null 2>&1; then
+                log_info "'$SERVICE' is already running. Restarting..."
+                pkill -x "$SERVICE" 2>/dev/null || true
+                sleep 1
+            fi
+            log_info "Starting '$SERVICE' in background..."
+            LOGFILE="build/$SERVICE.log"
+            nohup "$BINARY" > "$LOGFILE" 2>&1 &
+            log_success "'$SERVICE' started (PID $!). Logs: $LOGFILE"
+        else
+            log_info "Starting all services via Docker Compose..."
+            docker compose -p autolab up -d
+            log_success "All services started."
+        fi
+        ;;
+    stop)
+        log_info "Stopping all services..."
+        docker compose -p autolab down
+        log_success "All services stopped."
+        ;;
+    restart)
+        log_info "Restarting all services..."
+        docker compose -p autolab restart
+        log_success "All services restarted."
+        ;;
     setup)
-        log_info "Starting database infrastructure (postgres, redis)..."
-        docker compose up -d postgres redis
-        
-        log_info "Waiting for PostgreSQL database to be ready..."
+        log_info "Starting database infrastructure..."
+        docker compose -p autolab up -d postgres redis
+        log_info "Waiting for PostgreSQL..."
         READY=false
-        for i in {1..30}; do
-            if docker compose exec -T postgres pg_isready -U postgres -d postgres &> /dev/null; then
-                READY=true
-                break
+        for i in $(seq 1 30); do
+            if docker compose -p autolab exec -T postgres pg_isready -U postgres -d postgres &> /dev/null; then
+                READY=true; break
             fi
             sleep 1
         done
-        
-        if [ "$READY" = true ]; then
-            log_success "Database is ready!"
-            log_info "Running SQL migrations..."
-            
-            # Find and execute all migrations
-            MIGRATIONS_FOUND=false
-            # Use find to locate SQL files under services/*/migrations
-            # This is safer than globbing in case folders don't exist yet
-            if [ -d "services" ]; then
-                for migration in $(find services -path "*/migrations/*.sql" 2>/dev/null | sort); do
-                    if [ -f "$migration" ]; then
-                        MIGRATIONS_FOUND=true
-                        log_info "Executing migration: $migration"
-                        docker compose exec -T postgres psql -U postgres -d postgres < "$migration"
-                    fi
-                done
-            fi
-            
-            if [ "$MIGRATIONS_FOUND" = true ]; then
-                log_success "All migrations executed successfully."
-            else
-                log_warn "No migration files found under services/*/migrations/*.sql."
-            fi
-            log_success "Database setup complete."
-        else
-            log_error "PostgreSQL database failed to start or become ready in time."
-            exit 1
-        fi
+        if [ "$READY" != true ]; then log_error "PostgreSQL failed to start."; exit 1; fi
+        log_success "Database is ready!"
+        log_info "Running migrations..."
+        for migration in $(find services -path "*/migrations/*.sql" 2>/dev/null | sort); do
+            log_info "  $(basename "$migration")..."
+            docker compose -p autolab exec -T postgres psql -U postgres -d postgres < "$migration"
+        done
+        log_success "Setup complete."
         ;;
-        
-    start)
-        log_info "Starting all services (infra + microservices)..."
-        docker compose up -d
-        log_success "All services started successfully in the background."
-        log_info "Use './service logs' to view logs or './service status' to view container status."
-        ;;
-        
-    stop)
-        log_info "Stopping all services..."
-        docker compose down
-        log_success "All services stopped."
-        ;;
-        
-    restart)
-        log_info "Restarting all services..."
-        docker compose restart
-        log_success "All services restarted."
-        ;;
-        
     rebuild)
-        # Parse rebuild arguments (support "rebuild auth" and "rebuild -service auth")
-        SERVICE_NAME=""
-        if [ "$1" = "-service" ]; then
-            SERVICE_NAME=$2
+        if [ -z "$SERVICE" ] || [ "$SERVICE" = "all" ]; then
+            log_info "Rebuilding all services..."
+            docker compose -p autolab build
+            docker compose -p autolab up -d
+            log_success "All services rebuilt and restarted."
         else
-            SERVICE_NAME=$1
+            if ! docker compose -p autolab config --services | grep -Fxq "$SERVICE"; then
+                log_error "Service '$SERVICE' not found in docker-compose.yml."; exit 1
+            fi
+            log_info "Rebuilding '$SERVICE'..."
+            docker compose -p autolab build "$SERVICE"
+            docker compose -p autolab up -d --no-deps "$SERVICE"
+            log_success "'$SERVICE' rebuilt and restarted."
         fi
-        
-        if [ -z "$SERVICE_NAME" ]; then
-            log_error "Please specify a service to rebuild. Example: ./service rebuild auth"
-            exit 1
-        fi
-        
-        # Verify that the service is defined in docker-compose.yml
-        # (A simple check to ensure they typed a valid container service name)
-        if ! docker compose config --services | grep -Fxq "$SERVICE_NAME"; then
-            log_error "Service '$SERVICE_NAME' not found in docker-compose.yml."
-            log_info "Available services are: $(docker compose config --services | xargs)"
-            exit 1
-        fi
-        
-        log_info "Rebuilding service '$SERVICE_NAME'..."
-        docker compose build "$SERVICE_NAME"
-        
-        log_info "Restarting service '$SERVICE_NAME'..."
-        docker compose up -d --no-deps "$SERVICE_NAME"
-        log_success "Service '$SERVICE_NAME' successfully rebuilt and restarted."
         ;;
-        
     logs)
-        docker compose logs -f "$@"
+        if [ -n "$SERVICE" ]; then docker compose -p autolab logs -f "$SERVICE"
+        else docker compose -p autolab logs -f; fi
         ;;
-        
     status)
-        docker compose ps
+        docker compose -p autolab ps
         ;;
-        
     *)
-        show_help
+        show_help; exit 1
         ;;
 esac
