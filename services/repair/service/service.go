@@ -588,6 +588,9 @@ func (s *Service) CompleteAssignment(ctx context.Context, id string, totalMinute
 	repoA.Status = "completed"
 	now := time.Now()
 	repoA.CompletedAt = &now
+	if totalMinutes <= 0 && repoA.StartedAt != nil {
+		totalMinutes = int(now.Sub(*repoA.StartedAt).Minutes())
+	}
 	repoA.TotalMinutes = totalMinutes
 
 	if err := s.repo.UpdateAssignment(ctx, repoA); err != nil {
@@ -595,6 +598,19 @@ func (s *Service) CompleteAssignment(ctx context.Context, id string, totalMinute
 	}
 
 	return assignmentToModel(repoA), nil
+}
+
+func (s *Service) ListActiveAssignmentsByStaff(ctx context.Context, staffID string) ([]*model.StaffAssignment, error) {
+	items, err := s.repo.ListActiveAssignmentsByStaff(ctx, staffID)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*model.StaffAssignment, len(items))
+	for i, a := range items {
+		ca := a
+		result[i] = assignmentToModel(&ca)
+	}
+	return result, nil
 }
 
 func (s *Service) FindAssignmentByID(ctx context.Context, id string) (*model.StaffAssignment, error) {

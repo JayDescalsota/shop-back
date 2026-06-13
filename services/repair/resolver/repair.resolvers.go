@@ -139,6 +139,11 @@ func (r *queryResolver) StaffAssignments(ctx context.Context, appointmentID stri
 	return r.svc.ListAssignmentsByAppointment(ctx, appointmentID)
 }
 
+// StaffActiveAssignments is the resolver for the staffActiveAssignments field.
+func (r *queryResolver) StaffActiveAssignments(ctx context.Context, staffID string) ([]*model.StaffAssignment, error) {
+	return r.svc.ListActiveAssignmentsByStaff(ctx, staffID)
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 

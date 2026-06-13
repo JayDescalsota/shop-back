@@ -229,6 +229,7 @@ input UpdateStaffAssignmentInput {
 
 extend type Query {
     staffAssignments(appointmentId: ID!): [StaffAssignment!]!
+    staffActiveAssignments(staffId: ID!): [StaffAssignment!]!
 }
 
 extend type Mutation {
