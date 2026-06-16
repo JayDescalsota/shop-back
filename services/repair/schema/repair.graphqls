@@ -230,6 +230,9 @@ input UpdateStaffAssignmentInput {
 extend type Query {
     staffAssignments(appointmentId: ID!): [StaffAssignment!]!
     staffActiveAssignments(staffId: ID!): [StaffAssignment!]!
+    shopServices(tenantId: ID): ShopServiceConnection!
+    shopParts(tenantId: ID): ShopPartConnection!
+    shopTools(tenantId: ID): ShopToolConnection!
 }
 
 extend type Mutation {
@@ -239,4 +242,142 @@ extend type Mutation {
     reassignStaffAssignment(id: ID!, targetAppointmentId: ID!): StaffAssignment!
     startStaffAssignment(id: ID!): StaffAssignment!
     completeStaffAssignment(id: ID!, totalMinutes: Int!): StaffAssignment!
+    createShopService(input: CreateShopServiceInput!): ShopService!
+    deleteShopService(id: ID!): Boolean!
+    createShopPart(input: CreateShopPartInput!): ShopPart!
+    updateShopPart(id: ID!, input: UpdateShopPartInput!): ShopPart!
+    deleteShopPart(id: ID!): Boolean!
+    addPartBatch(input: CreatePartBatchInput!): PartBatch!
+    updatePartBatch(id: ID!, input: UpdatePartBatchInput!): PartBatch!
+    deletePartBatch(id: ID!): Boolean!
+    createShopTool(input: CreateShopToolInput!): ShopTool!
+    updateShopTool(id: ID!, input: UpdateShopToolInput!): ShopTool!
+    deleteShopTool(id: ID!): Boolean!
+}
+
+type ShopService @key(fields: "id") {
+    id: ID!
+    tenantId: ID!
+    serviceTypeId: ID!
+    name: String!
+    code: String
+    system: String
+    category: String
+    estimatedHours: Float
+    isActive: Boolean!
+    createdAt: String!
+    updatedAt: String!
+}
+
+type ShopServiceConnection {
+    items: [ShopService!]!
+    total: Int!
+}
+
+input CreateShopServiceInput {
+    tenantId: ID!
+    serviceTypeId: ID!
+    name: String!
+    code: String
+    system: String
+    category: String
+    estimatedHours: Float
+}
+
+type ShopPart @key(fields: "id") {
+    id: ID!
+    tenantId: ID!
+    name: String!
+    sku: String
+    description: String
+    quantity: Int!
+    unitPrice: Float
+    makeId: String
+    modelId: String
+    year: Int
+    locationId: String
+    batches: [PartBatch!]!
+    createdAt: String!
+    updatedAt: String!
+}
+
+type PartBatch {
+    id: ID!
+    partId: ID!
+    quantity: Int!
+    unitCost: Float!
+    createdAt: String!
+    updatedAt: String!
+}
+
+type ShopPartConnection {
+    items: [ShopPart!]!
+    total: Int!
+}
+
+input CreateShopPartInput {
+    tenantId: ID!
+    name: String!
+    sku: String
+    description: String
+    quantity: Int
+    unitPrice: Float
+    makeId: String
+    modelId: String
+    year: Int
+    locationId: String
+}
+
+input UpdateShopPartInput {
+    name: String
+    sku: String
+    description: String
+    quantity: Int
+    unitPrice: Float
+    makeId: String
+    modelId: String
+    year: Int
+    locationId: String
+}
+
+input CreatePartBatchInput {
+    partId: ID!
+    quantity: Int!
+    unitCost: Float!
+}
+
+input UpdatePartBatchInput {
+    quantity: Int
+    unitCost: Float
+}
+
+type ShopTool @key(fields: "id") {
+    id: ID!
+    tenantId: ID!
+    name: String!
+    description: String
+    quantity: Int!
+    status: String!
+    createdAt: String!
+    updatedAt: String!
+}
+
+type ShopToolConnection {
+    items: [ShopTool!]!
+    total: Int!
+}
+
+input CreateShopToolInput {
+    tenantId: ID!
+    name: String!
+    description: String
+    quantity: Int
+    status: String
+}
+
+input UpdateShopToolInput {
+    name: String
+    description: String
+    quantity: Int
+    status: String
 }

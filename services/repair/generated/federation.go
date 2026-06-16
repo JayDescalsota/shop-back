@@ -191,6 +191,63 @@ func (ec *executionContext) resolveEntity(
 
 			return entity, nil
 		}
+	case "ShopPart":
+		resolverName, err := entityResolverNameForShopPart(ctx, rep)
+		if err != nil {
+			return nil, fmt.Errorf(`finding resolver for Entity "ShopPart": %w`, err)
+		}
+		switch resolverName {
+
+		case "findShopPartByID":
+			id0, err := ec.unmarshalNID2string(ctx, rep["id"])
+			if err != nil {
+				return nil, fmt.Errorf(`unmarshalling param 0 for findShopPartByID(): %w`, err)
+			}
+			entity, err := ec.Resolvers.Entity().FindShopPartByID(ctx, id0)
+			if err != nil {
+				return nil, fmt.Errorf(`resolving Entity "ShopPart": %w`, err)
+			}
+
+			return entity, nil
+		}
+	case "ShopService":
+		resolverName, err := entityResolverNameForShopService(ctx, rep)
+		if err != nil {
+			return nil, fmt.Errorf(`finding resolver for Entity "ShopService": %w`, err)
+		}
+		switch resolverName {
+
+		case "findShopServiceByID":
+			id0, err := ec.unmarshalNID2string(ctx, rep["id"])
+			if err != nil {
+				return nil, fmt.Errorf(`unmarshalling param 0 for findShopServiceByID(): %w`, err)
+			}
+			entity, err := ec.Resolvers.Entity().FindShopServiceByID(ctx, id0)
+			if err != nil {
+				return nil, fmt.Errorf(`resolving Entity "ShopService": %w`, err)
+			}
+
+			return entity, nil
+		}
+	case "ShopTool":
+		resolverName, err := entityResolverNameForShopTool(ctx, rep)
+		if err != nil {
+			return nil, fmt.Errorf(`finding resolver for Entity "ShopTool": %w`, err)
+		}
+		switch resolverName {
+
+		case "findShopToolByID":
+			id0, err := ec.unmarshalNID2string(ctx, rep["id"])
+			if err != nil {
+				return nil, fmt.Errorf(`unmarshalling param 0 for findShopToolByID(): %w`, err)
+			}
+			entity, err := ec.Resolvers.Entity().FindShopToolByID(ctx, id0)
+			if err != nil {
+				return nil, fmt.Errorf(`resolving Entity "ShopTool": %w`, err)
+			}
+
+			return entity, nil
+		}
 	case "StaffAssignment":
 		resolverName, err := entityResolverNameForStaffAssignment(ctx, rep)
 		if err != nil {
@@ -322,6 +379,111 @@ func entityResolverNameForCustomer(ctx context.Context, rep EntityRepresentation
 		return "findCustomerByID", nil
 	}
 	return "", fmt.Errorf("%w for Customer due to %v", ErrTypeNotFound,
+		errors.Join(entityResolverErrs...).Error())
+}
+
+func entityResolverNameForShopPart(ctx context.Context, rep EntityRepresentation) (string, error) {
+	// we collect errors because a later entity resolver may work fine
+	// when an entity has multiple keys
+	entityResolverErrs := []error{}
+	for {
+		var (
+			m   EntityRepresentation
+			val any
+			ok  bool
+		)
+		_ = val
+		// if all of the KeyFields values for this resolver are null,
+		// we shouldn't use use it
+		allNull := true
+		m = rep
+		val, ok = m["id"]
+		if !ok {
+			entityResolverErrs = append(entityResolverErrs,
+				fmt.Errorf("%w due to missing Key Field \"id\" for ShopPart", ErrTypeNotFound))
+			break
+		}
+		if allNull {
+			allNull = val == nil
+		}
+		if allNull {
+			entityResolverErrs = append(entityResolverErrs,
+				fmt.Errorf("%w due to all null value KeyFields for ShopPart", ErrTypeNotFound))
+			break
+		}
+		return "findShopPartByID", nil
+	}
+	return "", fmt.Errorf("%w for ShopPart due to %v", ErrTypeNotFound,
+		errors.Join(entityResolverErrs...).Error())
+}
+
+func entityResolverNameForShopService(ctx context.Context, rep EntityRepresentation) (string, error) {
+	// we collect errors because a later entity resolver may work fine
+	// when an entity has multiple keys
+	entityResolverErrs := []error{}
+	for {
+		var (
+			m   EntityRepresentation
+			val any
+			ok  bool
+		)
+		_ = val
+		// if all of the KeyFields values for this resolver are null,
+		// we shouldn't use use it
+		allNull := true
+		m = rep
+		val, ok = m["id"]
+		if !ok {
+			entityResolverErrs = append(entityResolverErrs,
+				fmt.Errorf("%w due to missing Key Field \"id\" for ShopService", ErrTypeNotFound))
+			break
+		}
+		if allNull {
+			allNull = val == nil
+		}
+		if allNull {
+			entityResolverErrs = append(entityResolverErrs,
+				fmt.Errorf("%w due to all null value KeyFields for ShopService", ErrTypeNotFound))
+			break
+		}
+		return "findShopServiceByID", nil
+	}
+	return "", fmt.Errorf("%w for ShopService due to %v", ErrTypeNotFound,
+		errors.Join(entityResolverErrs...).Error())
+}
+
+func entityResolverNameForShopTool(ctx context.Context, rep EntityRepresentation) (string, error) {
+	// we collect errors because a later entity resolver may work fine
+	// when an entity has multiple keys
+	entityResolverErrs := []error{}
+	for {
+		var (
+			m   EntityRepresentation
+			val any
+			ok  bool
+		)
+		_ = val
+		// if all of the KeyFields values for this resolver are null,
+		// we shouldn't use use it
+		allNull := true
+		m = rep
+		val, ok = m["id"]
+		if !ok {
+			entityResolverErrs = append(entityResolverErrs,
+				fmt.Errorf("%w due to missing Key Field \"id\" for ShopTool", ErrTypeNotFound))
+			break
+		}
+		if allNull {
+			allNull = val == nil
+		}
+		if allNull {
+			entityResolverErrs = append(entityResolverErrs,
+				fmt.Errorf("%w due to all null value KeyFields for ShopTool", ErrTypeNotFound))
+			break
+		}
+		return "findShopToolByID", nil
+	}
+	return "", fmt.Errorf("%w for ShopTool due to %v", ErrTypeNotFound,
 		errors.Join(entityResolverErrs...).Error())
 }
 

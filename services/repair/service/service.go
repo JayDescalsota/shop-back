@@ -708,6 +708,349 @@ func vehicleToModel(v *repository.Vehicle) *model.Vehicle {
 	}
 }
 
+func (s *Service) CreateShopService(ctx context.Context, input model.CreateShopServiceInput) (*model.ShopService, error) {
+	repo := &repository.ShopService{
+		TenantID:      input.TenantID,
+		ServiceTypeID: input.ServiceTypeID,
+		Name:          input.Name,
+		IsActive:      true,
+	}
+	if input.Code != nil {
+		repo.Code = *input.Code
+	}
+	if input.System != nil {
+		repo.System = *input.System
+	}
+	if input.Category != nil {
+		repo.Category = *input.Category
+	}
+	if input.EstimatedHours != nil {
+		repo.EstimatedHours = input.EstimatedHours
+	}
+	if err := s.repo.CreateShopService(ctx, repo); err != nil {
+		return nil, fmt.Errorf("create shop service: %w", err)
+	}
+	return shopServiceToModel(repo), nil
+}
+
+func (s *Service) ListShopServices(ctx context.Context, tenantID string) (*model.ShopServiceConnection, error) {
+	items, err := s.repo.ListShopServices(ctx, tenantID)
+	if err != nil {
+		return nil, fmt.Errorf("list shop services: %w", err)
+	}
+	svcs := make([]*model.ShopService, len(items))
+	for i := range items {
+		svcs[i] = shopServiceToModel(&items[i])
+	}
+	return &model.ShopServiceConnection{Items: svcs, Total: len(svcs)}, nil
+}
+
+func (s *Service) DeleteShopService(ctx context.Context, id string) (bool, error) {
+	if err := s.repo.DeleteShopService(ctx, id); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (s *Service) CreateShopPart(ctx context.Context, input model.CreateShopPartInput) (*model.ShopPart, error) {
+	repo := &repository.ShopPart{
+		TenantID:  input.TenantID,
+		Name:      input.Name,
+		Quantity:  0,
+		UnitPrice: 0,
+	}
+	if input.Sku != nil {
+		repo.SKU = *input.Sku
+	}
+	if input.Description != nil {
+		repo.Description = *input.Description
+	}
+	if input.Quantity != nil {
+		repo.Quantity = *input.Quantity
+	}
+	if input.UnitPrice != nil {
+		repo.UnitPrice = *input.UnitPrice
+	}
+	if input.MakeID != nil {
+		repo.MakeID = input.MakeID
+	}
+	if input.ModelID != nil {
+		repo.ModelID = input.ModelID
+	}
+	if input.Year != nil {
+		repo.Year = input.Year
+	}
+	if input.LocationID != nil {
+		repo.LocationID = input.LocationID
+	}
+	if err := s.repo.CreateShopPart(ctx, repo); err != nil {
+		return nil, fmt.Errorf("create shop part: %w", err)
+	}
+	return shopPartToModel(repo), nil
+}
+
+func (s *Service) UpdateShopPart(ctx context.Context, id string, input model.UpdateShopPartInput) (*model.ShopPart, error) {
+	existing, err := s.repo.GetShopPart(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if input.Name != nil {
+		existing.Name = *input.Name
+	}
+	if input.Sku != nil {
+		existing.SKU = *input.Sku
+	}
+	if input.Description != nil {
+		existing.Description = *input.Description
+	}
+	if input.Quantity != nil {
+		existing.Quantity = *input.Quantity
+	}
+	if input.UnitPrice != nil {
+		existing.UnitPrice = *input.UnitPrice
+	}
+	if input.MakeID != nil {
+		existing.MakeID = input.MakeID
+	}
+	if input.ModelID != nil {
+		existing.ModelID = input.ModelID
+	}
+	if input.Year != nil {
+		existing.Year = input.Year
+	}
+	if input.LocationID != nil {
+		existing.LocationID = input.LocationID
+	}
+	if err := s.repo.UpdateShopPart(ctx, existing); err != nil {
+		return nil, fmt.Errorf("update shop part: %w", err)
+	}
+	return shopPartToModel(existing), nil
+}
+
+func (s *Service) ListShopParts(ctx context.Context, tenantID string) (*model.ShopPartConnection, error) {
+	items, err := s.repo.ListShopParts(ctx, tenantID)
+	if err != nil {
+		return nil, fmt.Errorf("list shop parts: %w", err)
+	}
+	parts := make([]*model.ShopPart, len(items))
+	for i := range items {
+		parts[i] = shopPartToModel(&items[i])
+	}
+	if err := s.populateBatches(ctx, parts); err != nil {
+		return nil, err
+	}
+	return &model.ShopPartConnection{Items: parts, Total: len(parts)}, nil
+}
+
+func (s *Service) populateBatches(ctx context.Context, parts []*model.ShopPart) error {
+	for _, p := range parts {
+		batches, err := s.repo.ListPartBatches(ctx, p.ID)
+		if err != nil {
+			return fmt.Errorf("get batches for part %s: %w", p.ID, err)
+		}
+		for j := range batches {
+			p.Batches = append(p.Batches, partBatchToModel(&batches[j]))
+		}
+	}
+	return nil
+}
+
+func (s *Service) DeleteShopPart(ctx context.Context, id string) (bool, error) {
+	if err := s.repo.DeleteShopPart(ctx, id); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (s *Service) AddPartBatch(ctx context.Context, input model.CreatePartBatchInput) (*model.PartBatch, error) {
+	repo := &repository.PartBatch{
+		PartID:   input.PartID,
+		TenantID: "", // set from part's tenant
+		Quantity: input.Quantity,
+		UnitCost: input.UnitCost,
+	}
+	if repo.Quantity <= 0 {
+		return nil, fmt.Errorf("quantity must be positive")
+	}
+	part, err := s.repo.GetShopPart(ctx, input.PartID)
+	if err != nil {
+		return nil, fmt.Errorf("get part for batch: %w", err)
+	}
+	repo.TenantID = part.TenantID
+	if err := s.repo.CreatePartBatch(ctx, repo); err != nil {
+		return nil, fmt.Errorf("create part batch: %w", err)
+	}
+	return partBatchToModel(repo), nil
+}
+
+func (s *Service) UpdatePartBatch(ctx context.Context, id string, input model.UpdatePartBatchInput) (*model.PartBatch, error) {
+	existing, err := s.repo.GetPartBatch(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if input.Quantity != nil {
+		existing.Quantity = *input.Quantity
+	}
+	if input.UnitCost != nil {
+		existing.UnitCost = *input.UnitCost
+	}
+	if err := s.repo.UpdatePartBatch(ctx, existing); err != nil {
+		return nil, fmt.Errorf("update part batch: %w", err)
+	}
+	return partBatchToModel(existing), nil
+}
+
+func (s *Service) DeletePartBatch(ctx context.Context, id string) (bool, error) {
+	if err := s.repo.DeletePartBatch(ctx, id); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (s *Service) FindShopPartByID(ctx context.Context, id string) (*model.ShopPart, error) {
+	p, err := s.repo.GetShopPart(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return shopPartToModel(p), nil
+}
+
+func (s *Service) ListPartBatches(ctx context.Context, partID string) ([]*model.PartBatch, error) {
+	items, err := s.repo.ListPartBatches(ctx, partID)
+	if err != nil {
+		return nil, fmt.Errorf("list part batches: %w", err)
+	}
+	batchModels := make([]*model.PartBatch, len(items))
+	for i := range items {
+		batchModels[i] = partBatchToModel(&items[i])
+	}
+	return batchModels, nil
+}
+
+func (s *Service) CreateShopTool(ctx context.Context, input model.CreateShopToolInput) (*model.ShopTool, error) {
+	repo := &repository.ShopTool{
+		TenantID:  input.TenantID,
+		Name:      input.Name,
+		Quantity:  0,
+		Status:    "available",
+	}
+	if input.Description != nil {
+		repo.Description = *input.Description
+	}
+	if input.Quantity != nil {
+		repo.Quantity = *input.Quantity
+	}
+	if input.Status != nil {
+		repo.Status = *input.Status
+	}
+	if err := s.repo.CreateShopTool(ctx, repo); err != nil {
+		return nil, fmt.Errorf("create shop tool: %w", err)
+	}
+	return shopToolToModel(repo), nil
+}
+
+func (s *Service) UpdateShopTool(ctx context.Context, id string, input model.UpdateShopToolInput) (*model.ShopTool, error) {
+	existing, err := s.repo.GetShopTool(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if input.Name != nil {
+		existing.Name = *input.Name
+	}
+	if input.Description != nil {
+		existing.Description = *input.Description
+	}
+	if input.Quantity != nil {
+		existing.Quantity = *input.Quantity
+	}
+	if input.Status != nil {
+		existing.Status = *input.Status
+	}
+	if err := s.repo.UpdateShopTool(ctx, existing); err != nil {
+		return nil, fmt.Errorf("update shop tool: %w", err)
+	}
+	return shopToolToModel(existing), nil
+}
+
+func (s *Service) ListShopTools(ctx context.Context, tenantID string) (*model.ShopToolConnection, error) {
+	items, err := s.repo.ListShopTools(ctx, tenantID)
+	if err != nil {
+		return nil, fmt.Errorf("list shop tools: %w", err)
+	}
+	tools := make([]*model.ShopTool, len(items))
+	for i := range items {
+		tools[i] = shopToolToModel(&items[i])
+	}
+	return &model.ShopToolConnection{Items: tools, Total: len(tools)}, nil
+}
+
+func (s *Service) DeleteShopTool(ctx context.Context, id string) (bool, error) {
+	if err := s.repo.DeleteShopTool(ctx, id); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func shopServiceToModel(r *repository.ShopService) *model.ShopService {
+	return &model.ShopService{
+		ID:             r.ID,
+		TenantID:       r.TenantID,
+		ServiceTypeID:  r.ServiceTypeID,
+		Name:           r.Name,
+		Code:           strPtr(r.Code),
+		System:         strPtr(r.System),
+		Category:       strPtr(r.Category),
+		EstimatedHours: r.EstimatedHours,
+		IsActive:       r.IsActive,
+		CreatedAt:      r.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:      r.UpdatedAt.Format(time.RFC3339),
+	}
+}
+
+func shopPartToModel(r *repository.ShopPart) *model.ShopPart {
+	up := r.UnitPrice
+	return &model.ShopPart{
+		ID:          r.ID,
+		TenantID:    r.TenantID,
+		Name:        r.Name,
+		Sku:         strPtr(r.SKU),
+		Description: strPtr(r.Description),
+		Quantity:    r.Quantity,
+		UnitPrice:   &up,
+		MakeID:      r.MakeID,
+		ModelID:     r.ModelID,
+		Year:        r.Year,
+		LocationID:  r.LocationID,
+		Batches:     []*model.PartBatch{},
+		CreatedAt:   r.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:   r.UpdatedAt.Format(time.RFC3339),
+	}
+}
+
+func partBatchToModel(r *repository.PartBatch) *model.PartBatch {
+	return &model.PartBatch{
+		ID:        r.ID,
+		PartID:    r.PartID,
+		Quantity:  r.Quantity,
+		UnitCost:  r.UnitCost,
+		CreatedAt: r.CreatedAt.Format(time.RFC3339),
+		UpdatedAt: r.UpdatedAt.Format(time.RFC3339),
+	}
+}
+
+func shopToolToModel(r *repository.ShopTool) *model.ShopTool {
+	return &model.ShopTool{
+		ID:          r.ID,
+		TenantID:    r.TenantID,
+		Name:        r.Name,
+		Description: strPtr(r.Description),
+		Quantity:    r.Quantity,
+		Status:      r.Status,
+		CreatedAt:   r.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:   r.UpdatedAt.Format(time.RFC3339),
+	}
+}
+
 func deref(s *string) string {
 	if s == nil {
 		return ""

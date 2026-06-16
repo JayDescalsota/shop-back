@@ -92,6 +92,61 @@ func (r *mutationResolver) CompleteStaffAssignment(ctx context.Context, id strin
 	return r.svc.CompleteAssignment(ctx, id, totalMinutes)
 }
 
+// CreateShopService is the resolver for the createShopService field.
+func (r *mutationResolver) CreateShopService(ctx context.Context, input model.CreateShopServiceInput) (*model.ShopService, error) {
+	return r.svc.CreateShopService(ctx, input)
+}
+
+// DeleteShopService is the resolver for the deleteShopService field.
+func (r *mutationResolver) DeleteShopService(ctx context.Context, id string) (bool, error) {
+	return r.svc.DeleteShopService(ctx, id)
+}
+
+// CreateShopPart is the resolver for the createShopPart field.
+func (r *mutationResolver) CreateShopPart(ctx context.Context, input model.CreateShopPartInput) (*model.ShopPart, error) {
+	return r.svc.CreateShopPart(ctx, input)
+}
+
+// UpdateShopPart is the resolver for the updateShopPart field.
+func (r *mutationResolver) UpdateShopPart(ctx context.Context, id string, input model.UpdateShopPartInput) (*model.ShopPart, error) {
+	return r.svc.UpdateShopPart(ctx, id, input)
+}
+
+// DeleteShopPart is the resolver for the deleteShopPart field.
+func (r *mutationResolver) DeleteShopPart(ctx context.Context, id string) (bool, error) {
+	return r.svc.DeleteShopPart(ctx, id)
+}
+
+// AddPartBatch is the resolver for the addPartBatch field.
+func (r *mutationResolver) AddPartBatch(ctx context.Context, input model.CreatePartBatchInput) (*model.PartBatch, error) {
+	return r.svc.AddPartBatch(ctx, input)
+}
+
+// UpdatePartBatch is the resolver for the updatePartBatch field.
+func (r *mutationResolver) UpdatePartBatch(ctx context.Context, id string, input model.UpdatePartBatchInput) (*model.PartBatch, error) {
+	return r.svc.UpdatePartBatch(ctx, id, input)
+}
+
+// DeletePartBatch is the resolver for the deletePartBatch field.
+func (r *mutationResolver) DeletePartBatch(ctx context.Context, id string) (bool, error) {
+	return r.svc.DeletePartBatch(ctx, id)
+}
+
+// CreateShopTool is the resolver for the createShopTool field.
+func (r *mutationResolver) CreateShopTool(ctx context.Context, input model.CreateShopToolInput) (*model.ShopTool, error) {
+	return r.svc.CreateShopTool(ctx, input)
+}
+
+// UpdateShopTool is the resolver for the updateShopTool field.
+func (r *mutationResolver) UpdateShopTool(ctx context.Context, id string, input model.UpdateShopToolInput) (*model.ShopTool, error) {
+	return r.svc.UpdateShopTool(ctx, id, input)
+}
+
+// DeleteShopTool is the resolver for the deleteShopTool field.
+func (r *mutationResolver) DeleteShopTool(ctx context.Context, id string) (bool, error) {
+	return r.svc.DeleteShopTool(ctx, id)
+}
+
 // Appointment is the resolver for the appointment field.
 func (r *queryResolver) Appointment(ctx context.Context, id string) (*model.Appointment, error) {
 	return r.svc.GetAppointment(ctx, id)
@@ -142,6 +197,33 @@ func (r *queryResolver) StaffAssignments(ctx context.Context, appointmentID stri
 // StaffActiveAssignments is the resolver for the staffActiveAssignments field.
 func (r *queryResolver) StaffActiveAssignments(ctx context.Context, staffID string) ([]*model.StaffAssignment, error) {
 	return r.svc.ListActiveAssignmentsByStaff(ctx, staffID)
+}
+
+// ShopServices is the resolver for the shopServices field.
+func (r *queryResolver) ShopServices(ctx context.Context, tenantID *string) (*model.ShopServiceConnection, error) {
+	tid := middleware.GetTenantID(ctx)
+	if tenantID != nil {
+		tid = *tenantID
+	}
+	return r.svc.ListShopServices(ctx, tid)
+}
+
+// ShopParts is the resolver for the shopParts field.
+func (r *queryResolver) ShopParts(ctx context.Context, tenantID *string) (*model.ShopPartConnection, error) {
+	tid := middleware.GetTenantID(ctx)
+	if tenantID != nil {
+		tid = *tenantID
+	}
+	return r.svc.ListShopParts(ctx, tid)
+}
+
+// ShopTools is the resolver for the shopTools field.
+func (r *queryResolver) ShopTools(ctx context.Context, tenantID *string) (*model.ShopToolConnection, error) {
+	tid := middleware.GetTenantID(ctx)
+	if tenantID != nil {
+		tid = *tenantID
+	}
+	return r.svc.ListShopTools(ctx, tid)
 }
 
 // Mutation returns generated.MutationResolver implementation.

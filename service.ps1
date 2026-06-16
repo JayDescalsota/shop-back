@@ -20,9 +20,9 @@ function Show-Help {
     Write-Host "  start <service>        Start a specific service locally (build + run)"
     Write-Host "  stop                   Stop all running services"
     Write-Host "  restart                Restart all running services"
-    Write-Host "  build                  Build all services locally (Windows binaries)"
-    Write-Host "  build <service>        Build a specific service locally"
-    Write-Host "  rebuild [service]      Rebuild all services, or a specific one (e.g. rebuild auth)"
+    Write-Host "  build                  Build all services (Go binaries + Docker images)"
+    Write-Host "  build <service>        Build a specific service (Go binary + Docker image)"
+    Write-Host "  rebuild [service]      Rebuild all services (Go + Docker + restart), or specific one"
     Write-Host "  logs [service]         Follow logs for all or a specific service"
     Write-Host "  status                 Show status of all services"
     Write-Host ""
@@ -50,6 +50,9 @@ switch ($Command) {
             $Output = ".\build\$Service.exe"
             go build -ldflags="-w -s" -o $Output .\services\$Service
             Write-Success "Built $Output"
+            Write-Info "Building Docker image for '$Service'..."
+            docker compose -p autolab build $Service
+            Write-Success "Docker image built for '$Service'."
         } else {
             Write-Info "Building all services..."
             $null = New-Item -ItemType Directory -Path ".\build" -Force
@@ -59,6 +62,9 @@ switch ($Command) {
                 go build -ldflags="-w -s" -o $Output .\services\$svc
                 Write-Success "    Built $Output"
             }
+            Write-Info "Building all Docker images..."
+            docker compose -p autolab build
+            Write-Success "All Docker images built."
         }
     }
 
@@ -125,13 +131,29 @@ switch ($Command) {
     "rebuild" {
         if ($Service -eq '' -or $Service -eq 'all') {
             Write-Info "Rebuilding all services..."
+            $null = New-Item -ItemType Directory -Path ".\build" -Force
+            foreach ($svc in $SERVICES) {
+                Write-Info "  Building '$svc'..."
+                $Output = ".\build\$svc.exe"
+                go build -ldflags="-w -s" -o $Output .\services\$svc
+            }
+            Write-Info "Building Docker images..."
             docker compose -p autolab build
+            Write-Info "Stopping and starting all services..."
+            docker compose -p autolab down
             docker compose -p autolab up -d
             Write-Success "All services rebuilt and restarted."
         } else {
             $available = docker compose -p autolab config --services
             if ($available -notcontains $Service) { Write-ErrorMsg "Service '$Service' not found in docker-compose.yml."; exit 1 }
             Write-Info "Rebuilding '$Service'..."
+            $null = New-Item -ItemType Directory -Path ".\build" -Force
+            $Output = ".\build\$Service.exe"
+            go build -ldflags="-w -s" -o $Output .\services\$Service
+            Write-Success "Built $Output"
+            Write-Info "Stopping old '$Service' container..."
+            docker compose -p autolab stop $Service
+            docker compose -p autolab rm -f $Service
             docker compose -p autolab build $Service
             docker compose -p autolab up -d --no-deps $Service
             Write-Success "'$Service' rebuilt and restarted."

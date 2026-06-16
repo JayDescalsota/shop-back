@@ -22,6 +22,21 @@ func (r *entityResolver) FindCustomerByID(ctx context.Context, id string) (*mode
 	return r.svc.FindCustomerByID(ctx, id)
 }
 
+// FindShopPartByID is the resolver for the findShopPartByID field.
+func (r *entityResolver) FindShopPartByID(ctx context.Context, id string) (*model.ShopPart, error) {
+	return r.svc.FindShopPartByID(ctx, id)
+}
+
+// FindShopServiceByID is the resolver for the findShopServiceByID field.
+func (r *entityResolver) FindShopServiceByID(ctx context.Context, id string) (*model.ShopService, error) {
+	panic(fmt.Errorf("not implemented: FindShopServiceByID - findShopServiceByID"))
+}
+
+// FindShopToolByID is the resolver for the findShopToolByID field.
+func (r *entityResolver) FindShopToolByID(ctx context.Context, id string) (*model.ShopTool, error) {
+	panic(fmt.Errorf("not implemented: FindShopToolByID - findShopToolByID"))
+}
+
 // FindStaffAssignmentByID is the resolver for the findStaffAssignmentByID field.
 func (r *entityResolver) FindStaffAssignmentByID(ctx context.Context, id string) (*model.StaffAssignment, error) {
 	panic(fmt.Errorf("not implemented: FindStaffAssignmentByID - findStaffAssignmentByID"))

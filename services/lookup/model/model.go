@@ -112,6 +112,28 @@ type 	PartCompatibility struct {
 	UpdatedAt  time.Time `bun:"updated_at,notnull" json:"updatedAt"`
 }
 
+type LookupPart struct {
+	bun.BaseModel `bun:"table:lookup.parts"`
+
+	ID        string    `bun:"id,pk,type:uuid" json:"id"`
+	Name      string    `bun:"name,notnull" json:"name"`
+	Category  *string   `bun:"category" json:"category"`
+	IsActive  bool      `bun:"is_active,notnull" json:"isActive"`
+	CreatedAt time.Time `bun:"created_at,notnull" json:"createdAt"`
+	UpdatedAt time.Time `bun:"updated_at,notnull" json:"updatedAt"`
+}
+
+type StorageLocation struct {
+	bun.BaseModel `bun:"table:lookup.storage_locations"`
+
+	ID        string    `bun:"id,pk,type:uuid" json:"id"`
+	Name      string    `bun:"name,notnull" json:"name"`
+	Code      string    `bun:"code,notnull" json:"code"`
+	IsActive  bool      `bun:"is_active,notnull" json:"isActive"`
+	CreatedAt time.Time `bun:"created_at,notnull" json:"createdAt"`
+	UpdatedAt time.Time `bun:"updated_at,notnull" json:"updatedAt"`
+}
+
 type 	FuelType struct {
 	bun.BaseModel `bun:"table:lookup.fuel_types"`
 

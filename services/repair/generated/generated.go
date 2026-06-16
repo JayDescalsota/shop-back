@@ -95,18 +95,29 @@ type ComplexityRoot struct {
 	Entity struct {
 		FindAppointmentByID     func(childComplexity int, id string) int
 		FindCustomerByID        func(childComplexity int, id string) int
+		FindShopPartByID        func(childComplexity int, id string) int
+		FindShopServiceByID     func(childComplexity int, id string) int
+		FindShopToolByID        func(childComplexity int, id string) int
 		FindStaffAssignmentByID func(childComplexity int, id string) int
 		FindVehicleByID         func(childComplexity int, id string) int
 	}
 
 	Mutation struct {
+		AddPartBatch            func(childComplexity int, input model.CreatePartBatchInput) int
 		CompleteStaffAssignment func(childComplexity int, id string, totalMinutes int) int
 		CreateAppointment       func(childComplexity int, input model.CreateAppointmentInput) int
 		CreateCustomer          func(childComplexity int, input model.CreateCustomerInput) int
+		CreateShopPart          func(childComplexity int, input model.CreateShopPartInput) int
+		CreateShopService       func(childComplexity int, input model.CreateShopServiceInput) int
+		CreateShopTool          func(childComplexity int, input model.CreateShopToolInput) int
 		CreateStaffAssignment   func(childComplexity int, input model.CreateStaffAssignmentInput) int
 		CreateVehicle           func(childComplexity int, input model.CreateVehicleInput) int
 		DeleteAppointment       func(childComplexity int, id string) int
 		DeleteCustomer          func(childComplexity int, id string) int
+		DeletePartBatch         func(childComplexity int, id string) int
+		DeleteShopPart          func(childComplexity int, id string) int
+		DeleteShopService       func(childComplexity int, id string) int
+		DeleteShopTool          func(childComplexity int, id string) int
 		DeleteStaffAssignment   func(childComplexity int, id string) int
 		DeleteVehicle           func(childComplexity int, id string) int
 		ReassignStaffAssignment func(childComplexity int, id string, targetAppointmentID string) int
@@ -114,8 +125,20 @@ type ComplexityRoot struct {
 		UpdateAppointment       func(childComplexity int, id string, input model.UpdateAppointmentInput) int
 		UpdateAppointmentStatus func(childComplexity int, id string, status string) int
 		UpdateCustomer          func(childComplexity int, id string, input model.UpdateCustomerInput) int
+		UpdatePartBatch         func(childComplexity int, id string, input model.UpdatePartBatchInput) int
+		UpdateShopPart          func(childComplexity int, id string, input model.UpdateShopPartInput) int
+		UpdateShopTool          func(childComplexity int, id string, input model.UpdateShopToolInput) int
 		UpdateStaffAssignment   func(childComplexity int, id string, input model.UpdateStaffAssignmentInput) int
 		UpdateVehicle           func(childComplexity int, id string, input model.UpdateVehicleInput) int
+	}
+
+	PartBatch struct {
+		CreatedAt func(childComplexity int) int
+		ID        func(childComplexity int) int
+		PartID    func(childComplexity int) int
+		Quantity  func(childComplexity int) int
+		UnitCost  func(childComplexity int) int
+		UpdatedAt func(childComplexity int) int
 	}
 
 	Query struct {
@@ -123,12 +146,72 @@ type ComplexityRoot struct {
 		Appointments           func(childComplexity int, tenantID *string) int
 		Customer               func(childComplexity int, id string) int
 		Customers              func(childComplexity int, tenantID *string) int
+		ShopParts              func(childComplexity int, tenantID *string) int
+		ShopServices           func(childComplexity int, tenantID *string) int
+		ShopTools              func(childComplexity int, tenantID *string) int
 		StaffActiveAssignments func(childComplexity int, staffID string) int
 		StaffAssignments       func(childComplexity int, appointmentID string) int
 		Vehicle                func(childComplexity int, id string) int
 		Vehicles               func(childComplexity int, tenantID *string) int
 		__resolve__service     func(childComplexity int) int
 		__resolve_entities     func(childComplexity int, representations []map[string]any) int
+	}
+
+	ShopPart struct {
+		Batches     func(childComplexity int) int
+		CreatedAt   func(childComplexity int) int
+		Description func(childComplexity int) int
+		ID          func(childComplexity int) int
+		LocationID  func(childComplexity int) int
+		MakeID      func(childComplexity int) int
+		ModelID     func(childComplexity int) int
+		Name        func(childComplexity int) int
+		Quantity    func(childComplexity int) int
+		Sku         func(childComplexity int) int
+		TenantID    func(childComplexity int) int
+		UnitPrice   func(childComplexity int) int
+		UpdatedAt   func(childComplexity int) int
+		Year        func(childComplexity int) int
+	}
+
+	ShopPartConnection struct {
+		Items func(childComplexity int) int
+		Total func(childComplexity int) int
+	}
+
+	ShopService struct {
+		Category       func(childComplexity int) int
+		Code           func(childComplexity int) int
+		CreatedAt      func(childComplexity int) int
+		EstimatedHours func(childComplexity int) int
+		ID             func(childComplexity int) int
+		IsActive       func(childComplexity int) int
+		Name           func(childComplexity int) int
+		ServiceTypeID  func(childComplexity int) int
+		System         func(childComplexity int) int
+		TenantID       func(childComplexity int) int
+		UpdatedAt      func(childComplexity int) int
+	}
+
+	ShopServiceConnection struct {
+		Items func(childComplexity int) int
+		Total func(childComplexity int) int
+	}
+
+	ShopTool struct {
+		CreatedAt   func(childComplexity int) int
+		Description func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Name        func(childComplexity int) int
+		Quantity    func(childComplexity int) int
+		Status      func(childComplexity int) int
+		TenantID    func(childComplexity int) int
+		UpdatedAt   func(childComplexity int) int
+	}
+
+	ShopToolConnection struct {
+		Items func(childComplexity int) int
+		Total func(childComplexity int) int
 	}
 
 	StaffAssignment struct {
@@ -181,6 +264,9 @@ type ComplexityRoot struct {
 type EntityResolver interface {
 	FindAppointmentByID(ctx context.Context, id string) (*model.Appointment, error)
 	FindCustomerByID(ctx context.Context, id string) (*model.Customer, error)
+	FindShopPartByID(ctx context.Context, id string) (*model.ShopPart, error)
+	FindShopServiceByID(ctx context.Context, id string) (*model.ShopService, error)
+	FindShopToolByID(ctx context.Context, id string) (*model.ShopTool, error)
 	FindStaffAssignmentByID(ctx context.Context, id string) (*model.StaffAssignment, error)
 	FindVehicleByID(ctx context.Context, id string) (*model.Vehicle, error)
 }
@@ -201,6 +287,17 @@ type MutationResolver interface {
 	ReassignStaffAssignment(ctx context.Context, id string, targetAppointmentID string) (*model.StaffAssignment, error)
 	StartStaffAssignment(ctx context.Context, id string) (*model.StaffAssignment, error)
 	CompleteStaffAssignment(ctx context.Context, id string, totalMinutes int) (*model.StaffAssignment, error)
+	CreateShopService(ctx context.Context, input model.CreateShopServiceInput) (*model.ShopService, error)
+	DeleteShopService(ctx context.Context, id string) (bool, error)
+	CreateShopPart(ctx context.Context, input model.CreateShopPartInput) (*model.ShopPart, error)
+	UpdateShopPart(ctx context.Context, id string, input model.UpdateShopPartInput) (*model.ShopPart, error)
+	DeleteShopPart(ctx context.Context, id string) (bool, error)
+	AddPartBatch(ctx context.Context, input model.CreatePartBatchInput) (*model.PartBatch, error)
+	UpdatePartBatch(ctx context.Context, id string, input model.UpdatePartBatchInput) (*model.PartBatch, error)
+	DeletePartBatch(ctx context.Context, id string) (bool, error)
+	CreateShopTool(ctx context.Context, input model.CreateShopToolInput) (*model.ShopTool, error)
+	UpdateShopTool(ctx context.Context, id string, input model.UpdateShopToolInput) (*model.ShopTool, error)
+	DeleteShopTool(ctx context.Context, id string) (bool, error)
 }
 type QueryResolver interface {
 	Appointment(ctx context.Context, id string) (*model.Appointment, error)
@@ -211,6 +308,9 @@ type QueryResolver interface {
 	Vehicles(ctx context.Context, tenantID *string) (*model.VehicleConnection, error)
 	StaffAssignments(ctx context.Context, appointmentID string) ([]*model.StaffAssignment, error)
 	StaffActiveAssignments(ctx context.Context, staffID string) ([]*model.StaffAssignment, error)
+	ShopServices(ctx context.Context, tenantID *string) (*model.ShopServiceConnection, error)
+	ShopParts(ctx context.Context, tenantID *string) (*model.ShopPartConnection, error)
+	ShopTools(ctx context.Context, tenantID *string) (*model.ShopToolConnection, error)
 }
 
 type executableSchema graphql.ExecutableSchemaState[ResolverRoot, DirectiveRoot, ComplexityRoot]
@@ -505,6 +605,39 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Entity.FindCustomerByID(childComplexity, args["id"].(string)), true
+	case "Entity.findShopPartByID":
+		if e.ComplexityRoot.Entity.FindShopPartByID == nil {
+			break
+		}
+
+		args, err := ec.field_Entity_findShopPartByID_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Entity.FindShopPartByID(childComplexity, args["id"].(string)), true
+	case "Entity.findShopServiceByID":
+		if e.ComplexityRoot.Entity.FindShopServiceByID == nil {
+			break
+		}
+
+		args, err := ec.field_Entity_findShopServiceByID_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Entity.FindShopServiceByID(childComplexity, args["id"].(string)), true
+	case "Entity.findShopToolByID":
+		if e.ComplexityRoot.Entity.FindShopToolByID == nil {
+			break
+		}
+
+		args, err := ec.field_Entity_findShopToolByID_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Entity.FindShopToolByID(childComplexity, args["id"].(string)), true
 	case "Entity.findStaffAssignmentByID":
 		if e.ComplexityRoot.Entity.FindStaffAssignmentByID == nil {
 			break
@@ -528,6 +661,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.Entity.FindVehicleByID(childComplexity, args["id"].(string)), true
 
+	case "Mutation.addPartBatch":
+		if e.ComplexityRoot.Mutation.AddPartBatch == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_addPartBatch_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.AddPartBatch(childComplexity, args["input"].(model.CreatePartBatchInput)), true
 	case "Mutation.completeStaffAssignment":
 		if e.ComplexityRoot.Mutation.CompleteStaffAssignment == nil {
 			break
@@ -561,6 +705,39 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.CreateCustomer(childComplexity, args["input"].(model.CreateCustomerInput)), true
+	case "Mutation.createShopPart":
+		if e.ComplexityRoot.Mutation.CreateShopPart == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createShopPart_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreateShopPart(childComplexity, args["input"].(model.CreateShopPartInput)), true
+	case "Mutation.createShopService":
+		if e.ComplexityRoot.Mutation.CreateShopService == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createShopService_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreateShopService(childComplexity, args["input"].(model.CreateShopServiceInput)), true
+	case "Mutation.createShopTool":
+		if e.ComplexityRoot.Mutation.CreateShopTool == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createShopTool_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.CreateShopTool(childComplexity, args["input"].(model.CreateShopToolInput)), true
 	case "Mutation.createStaffAssignment":
 		if e.ComplexityRoot.Mutation.CreateStaffAssignment == nil {
 			break
@@ -605,6 +782,50 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.DeleteCustomer(childComplexity, args["id"].(string)), true
+	case "Mutation.deletePartBatch":
+		if e.ComplexityRoot.Mutation.DeletePartBatch == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deletePartBatch_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DeletePartBatch(childComplexity, args["id"].(string)), true
+	case "Mutation.deleteShopPart":
+		if e.ComplexityRoot.Mutation.DeleteShopPart == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteShopPart_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DeleteShopPart(childComplexity, args["id"].(string)), true
+	case "Mutation.deleteShopService":
+		if e.ComplexityRoot.Mutation.DeleteShopService == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteShopService_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DeleteShopService(childComplexity, args["id"].(string)), true
+	case "Mutation.deleteShopTool":
+		if e.ComplexityRoot.Mutation.DeleteShopTool == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteShopTool_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DeleteShopTool(childComplexity, args["id"].(string)), true
 	case "Mutation.deleteStaffAssignment":
 		if e.ComplexityRoot.Mutation.DeleteStaffAssignment == nil {
 			break
@@ -682,6 +903,39 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.UpdateCustomer(childComplexity, args["id"].(string), args["input"].(model.UpdateCustomerInput)), true
+	case "Mutation.updatePartBatch":
+		if e.ComplexityRoot.Mutation.UpdatePartBatch == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updatePartBatch_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdatePartBatch(childComplexity, args["id"].(string), args["input"].(model.UpdatePartBatchInput)), true
+	case "Mutation.updateShopPart":
+		if e.ComplexityRoot.Mutation.UpdateShopPart == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateShopPart_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdateShopPart(childComplexity, args["id"].(string), args["input"].(model.UpdateShopPartInput)), true
+	case "Mutation.updateShopTool":
+		if e.ComplexityRoot.Mutation.UpdateShopTool == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateShopTool_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.UpdateShopTool(childComplexity, args["id"].(string), args["input"].(model.UpdateShopToolInput)), true
 	case "Mutation.updateStaffAssignment":
 		if e.ComplexityRoot.Mutation.UpdateStaffAssignment == nil {
 			break
@@ -704,6 +958,43 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.UpdateVehicle(childComplexity, args["id"].(string), args["input"].(model.UpdateVehicleInput)), true
+
+	case "PartBatch.createdAt":
+		if e.ComplexityRoot.PartBatch.CreatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartBatch.CreatedAt(childComplexity), true
+	case "PartBatch.id":
+		if e.ComplexityRoot.PartBatch.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartBatch.ID(childComplexity), true
+	case "PartBatch.partId":
+		if e.ComplexityRoot.PartBatch.PartID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartBatch.PartID(childComplexity), true
+	case "PartBatch.quantity":
+		if e.ComplexityRoot.PartBatch.Quantity == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartBatch.Quantity(childComplexity), true
+	case "PartBatch.unitCost":
+		if e.ComplexityRoot.PartBatch.UnitCost == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartBatch.UnitCost(childComplexity), true
+	case "PartBatch.updatedAt":
+		if e.ComplexityRoot.PartBatch.UpdatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.PartBatch.UpdatedAt(childComplexity), true
 
 	case "Query.appointment":
 		if e.ComplexityRoot.Query.Appointment == nil {
@@ -750,6 +1041,39 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.Query.Customers(childComplexity, args["tenantId"].(*string)), true
 
+	case "Query.shopParts":
+		if e.ComplexityRoot.Query.ShopParts == nil {
+			break
+		}
+
+		args, err := ec.field_Query_shopParts_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.ShopParts(childComplexity, args["tenantId"].(*string)), true
+	case "Query.shopServices":
+		if e.ComplexityRoot.Query.ShopServices == nil {
+			break
+		}
+
+		args, err := ec.field_Query_shopServices_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.ShopServices(childComplexity, args["tenantId"].(*string)), true
+	case "Query.shopTools":
+		if e.ComplexityRoot.Query.ShopTools == nil {
+			break
+		}
+
+		args, err := ec.field_Query_shopTools_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.ShopTools(childComplexity, args["tenantId"].(*string)), true
 	case "Query.staffActiveAssignments":
 		if e.ComplexityRoot.Query.StaffActiveAssignments == nil {
 			break
@@ -811,6 +1135,246 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.__resolve_entities(childComplexity, args["representations"].([]map[string]any)), true
+
+	case "ShopPart.batches":
+		if e.ComplexityRoot.ShopPart.Batches == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopPart.Batches(childComplexity), true
+	case "ShopPart.createdAt":
+		if e.ComplexityRoot.ShopPart.CreatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopPart.CreatedAt(childComplexity), true
+	case "ShopPart.description":
+		if e.ComplexityRoot.ShopPart.Description == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopPart.Description(childComplexity), true
+	case "ShopPart.id":
+		if e.ComplexityRoot.ShopPart.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopPart.ID(childComplexity), true
+	case "ShopPart.locationId":
+		if e.ComplexityRoot.ShopPart.LocationID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopPart.LocationID(childComplexity), true
+	case "ShopPart.makeId":
+		if e.ComplexityRoot.ShopPart.MakeID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopPart.MakeID(childComplexity), true
+	case "ShopPart.modelId":
+		if e.ComplexityRoot.ShopPart.ModelID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopPart.ModelID(childComplexity), true
+	case "ShopPart.name":
+		if e.ComplexityRoot.ShopPart.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopPart.Name(childComplexity), true
+	case "ShopPart.quantity":
+		if e.ComplexityRoot.ShopPart.Quantity == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopPart.Quantity(childComplexity), true
+	case "ShopPart.sku":
+		if e.ComplexityRoot.ShopPart.Sku == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopPart.Sku(childComplexity), true
+	case "ShopPart.tenantId":
+		if e.ComplexityRoot.ShopPart.TenantID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopPart.TenantID(childComplexity), true
+	case "ShopPart.unitPrice":
+		if e.ComplexityRoot.ShopPart.UnitPrice == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopPart.UnitPrice(childComplexity), true
+	case "ShopPart.updatedAt":
+		if e.ComplexityRoot.ShopPart.UpdatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopPart.UpdatedAt(childComplexity), true
+	case "ShopPart.year":
+		if e.ComplexityRoot.ShopPart.Year == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopPart.Year(childComplexity), true
+
+	case "ShopPartConnection.items":
+		if e.ComplexityRoot.ShopPartConnection.Items == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopPartConnection.Items(childComplexity), true
+	case "ShopPartConnection.total":
+		if e.ComplexityRoot.ShopPartConnection.Total == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopPartConnection.Total(childComplexity), true
+
+	case "ShopService.category":
+		if e.ComplexityRoot.ShopService.Category == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopService.Category(childComplexity), true
+	case "ShopService.code":
+		if e.ComplexityRoot.ShopService.Code == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopService.Code(childComplexity), true
+	case "ShopService.createdAt":
+		if e.ComplexityRoot.ShopService.CreatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopService.CreatedAt(childComplexity), true
+	case "ShopService.estimatedHours":
+		if e.ComplexityRoot.ShopService.EstimatedHours == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopService.EstimatedHours(childComplexity), true
+	case "ShopService.id":
+		if e.ComplexityRoot.ShopService.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopService.ID(childComplexity), true
+	case "ShopService.isActive":
+		if e.ComplexityRoot.ShopService.IsActive == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopService.IsActive(childComplexity), true
+	case "ShopService.name":
+		if e.ComplexityRoot.ShopService.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopService.Name(childComplexity), true
+	case "ShopService.serviceTypeId":
+		if e.ComplexityRoot.ShopService.ServiceTypeID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopService.ServiceTypeID(childComplexity), true
+	case "ShopService.system":
+		if e.ComplexityRoot.ShopService.System == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopService.System(childComplexity), true
+	case "ShopService.tenantId":
+		if e.ComplexityRoot.ShopService.TenantID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopService.TenantID(childComplexity), true
+	case "ShopService.updatedAt":
+		if e.ComplexityRoot.ShopService.UpdatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopService.UpdatedAt(childComplexity), true
+
+	case "ShopServiceConnection.items":
+		if e.ComplexityRoot.ShopServiceConnection.Items == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopServiceConnection.Items(childComplexity), true
+	case "ShopServiceConnection.total":
+		if e.ComplexityRoot.ShopServiceConnection.Total == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopServiceConnection.Total(childComplexity), true
+
+	case "ShopTool.createdAt":
+		if e.ComplexityRoot.ShopTool.CreatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopTool.CreatedAt(childComplexity), true
+	case "ShopTool.description":
+		if e.ComplexityRoot.ShopTool.Description == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopTool.Description(childComplexity), true
+	case "ShopTool.id":
+		if e.ComplexityRoot.ShopTool.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopTool.ID(childComplexity), true
+	case "ShopTool.name":
+		if e.ComplexityRoot.ShopTool.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopTool.Name(childComplexity), true
+	case "ShopTool.quantity":
+		if e.ComplexityRoot.ShopTool.Quantity == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopTool.Quantity(childComplexity), true
+	case "ShopTool.status":
+		if e.ComplexityRoot.ShopTool.Status == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopTool.Status(childComplexity), true
+	case "ShopTool.tenantId":
+		if e.ComplexityRoot.ShopTool.TenantID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopTool.TenantID(childComplexity), true
+	case "ShopTool.updatedAt":
+		if e.ComplexityRoot.ShopTool.UpdatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopTool.UpdatedAt(childComplexity), true
+
+	case "ShopToolConnection.items":
+		if e.ComplexityRoot.ShopToolConnection.Items == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopToolConnection.Items(childComplexity), true
+	case "ShopToolConnection.total":
+		if e.ComplexityRoot.ShopToolConnection.Total == nil {
+			break
+		}
+
+		return e.ComplexityRoot.ShopToolConnection.Total(childComplexity), true
 
 	case "StaffAssignment.appointmentId":
 		if e.ComplexityRoot.StaffAssignment.AppointmentID == nil {
@@ -1013,10 +1577,17 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputCreateAppointmentInput,
 		ec.unmarshalInputCreateCustomerInput,
+		ec.unmarshalInputCreatePartBatchInput,
+		ec.unmarshalInputCreateShopPartInput,
+		ec.unmarshalInputCreateShopServiceInput,
+		ec.unmarshalInputCreateShopToolInput,
 		ec.unmarshalInputCreateStaffAssignmentInput,
 		ec.unmarshalInputCreateVehicleInput,
 		ec.unmarshalInputUpdateAppointmentInput,
 		ec.unmarshalInputUpdateCustomerInput,
+		ec.unmarshalInputUpdatePartBatchInput,
+		ec.unmarshalInputUpdateShopPartInput,
+		ec.unmarshalInputUpdateShopToolInput,
 		ec.unmarshalInputUpdateStaffAssignmentInput,
 		ec.unmarshalInputUpdateVehicleInput,
 	)
@@ -1326,6 +1897,9 @@ input UpdateStaffAssignmentInput {
 extend type Query {
     staffAssignments(appointmentId: ID!): [StaffAssignment!]!
     staffActiveAssignments(staffId: ID!): [StaffAssignment!]!
+    shopServices(tenantId: ID): ShopServiceConnection!
+    shopParts(tenantId: ID): ShopPartConnection!
+    shopTools(tenantId: ID): ShopToolConnection!
 }
 
 extend type Mutation {
@@ -1335,6 +1909,144 @@ extend type Mutation {
     reassignStaffAssignment(id: ID!, targetAppointmentId: ID!): StaffAssignment!
     startStaffAssignment(id: ID!): StaffAssignment!
     completeStaffAssignment(id: ID!, totalMinutes: Int!): StaffAssignment!
+    createShopService(input: CreateShopServiceInput!): ShopService!
+    deleteShopService(id: ID!): Boolean!
+    createShopPart(input: CreateShopPartInput!): ShopPart!
+    updateShopPart(id: ID!, input: UpdateShopPartInput!): ShopPart!
+    deleteShopPart(id: ID!): Boolean!
+    addPartBatch(input: CreatePartBatchInput!): PartBatch!
+    updatePartBatch(id: ID!, input: UpdatePartBatchInput!): PartBatch!
+    deletePartBatch(id: ID!): Boolean!
+    createShopTool(input: CreateShopToolInput!): ShopTool!
+    updateShopTool(id: ID!, input: UpdateShopToolInput!): ShopTool!
+    deleteShopTool(id: ID!): Boolean!
+}
+
+type ShopService @key(fields: "id") {
+    id: ID!
+    tenantId: ID!
+    serviceTypeId: ID!
+    name: String!
+    code: String
+    system: String
+    category: String
+    estimatedHours: Float
+    isActive: Boolean!
+    createdAt: String!
+    updatedAt: String!
+}
+
+type ShopServiceConnection {
+    items: [ShopService!]!
+    total: Int!
+}
+
+input CreateShopServiceInput {
+    tenantId: ID!
+    serviceTypeId: ID!
+    name: String!
+    code: String
+    system: String
+    category: String
+    estimatedHours: Float
+}
+
+type ShopPart @key(fields: "id") {
+    id: ID!
+    tenantId: ID!
+    name: String!
+    sku: String
+    description: String
+    quantity: Int!
+    unitPrice: Float
+    makeId: String
+    modelId: String
+    year: Int
+    locationId: String
+    batches: [PartBatch!]!
+    createdAt: String!
+    updatedAt: String!
+}
+
+type PartBatch {
+    id: ID!
+    partId: ID!
+    quantity: Int!
+    unitCost: Float!
+    createdAt: String!
+    updatedAt: String!
+}
+
+type ShopPartConnection {
+    items: [ShopPart!]!
+    total: Int!
+}
+
+input CreateShopPartInput {
+    tenantId: ID!
+    name: String!
+    sku: String
+    description: String
+    quantity: Int
+    unitPrice: Float
+    makeId: String
+    modelId: String
+    year: Int
+    locationId: String
+}
+
+input UpdateShopPartInput {
+    name: String
+    sku: String
+    description: String
+    quantity: Int
+    unitPrice: Float
+    makeId: String
+    modelId: String
+    year: Int
+    locationId: String
+}
+
+input CreatePartBatchInput {
+    partId: ID!
+    quantity: Int!
+    unitCost: Float!
+}
+
+input UpdatePartBatchInput {
+    quantity: Int
+    unitCost: Float
+}
+
+type ShopTool @key(fields: "id") {
+    id: ID!
+    tenantId: ID!
+    name: String!
+    description: String
+    quantity: Int!
+    status: String!
+    createdAt: String!
+    updatedAt: String!
+}
+
+type ShopToolConnection {
+    items: [ShopTool!]!
+    total: Int!
+}
+
+input CreateShopToolInput {
+    tenantId: ID!
+    name: String!
+    description: String
+    quantity: Int
+    status: String
+}
+
+input UpdateShopToolInput {
+    name: String
+    description: String
+    quantity: Int
+    status: String
 }
 `, BuiltIn: false},
 	{Name: "../federation/directives.graphql", Input: `
@@ -1390,12 +2102,15 @@ extend type Mutation {
 `, BuiltIn: true},
 	{Name: "../federation/entity.graphql", Input: `
 # a union of all types that use the @key directive
-union _Entity = Appointment | Customer | StaffAssignment | Vehicle
+union _Entity = Appointment | Customer | ShopPart | ShopService | ShopTool | StaffAssignment | Vehicle
 
 # fake type to build resolver interfaces for users to implement
 type Entity {
 	findAppointmentByID(id: ID!,): Appointment!
 	findCustomerByID(id: ID!,): Customer!
+	findShopPartByID(id: ID!,): ShopPart!
+	findShopServiceByID(id: ID!,): ShopService!
+	findShopToolByID(id: ID!,): ShopTool!
 	findStaffAssignmentByID(id: ID!,): StaffAssignment!
 	findVehicleByID(id: ID!,): Vehicle!
 }
@@ -1522,6 +2237,138 @@ func (ec *executionContext) childFields_CustomerConnection(ctx context.Context, 
 		return ec.fieldContext_CustomerConnection_total(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type CustomerConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_PartBatch(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_PartBatch_id(ctx, field)
+	case "partId":
+		return ec.fieldContext_PartBatch_partId(ctx, field)
+	case "quantity":
+		return ec.fieldContext_PartBatch_quantity(ctx, field)
+	case "unitCost":
+		return ec.fieldContext_PartBatch_unitCost(ctx, field)
+	case "createdAt":
+		return ec.fieldContext_PartBatch_createdAt(ctx, field)
+	case "updatedAt":
+		return ec.fieldContext_PartBatch_updatedAt(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type PartBatch", field.Name)
+}
+
+func (ec *executionContext) childFields_ShopPart(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_ShopPart_id(ctx, field)
+	case "tenantId":
+		return ec.fieldContext_ShopPart_tenantId(ctx, field)
+	case "name":
+		return ec.fieldContext_ShopPart_name(ctx, field)
+	case "sku":
+		return ec.fieldContext_ShopPart_sku(ctx, field)
+	case "description":
+		return ec.fieldContext_ShopPart_description(ctx, field)
+	case "quantity":
+		return ec.fieldContext_ShopPart_quantity(ctx, field)
+	case "unitPrice":
+		return ec.fieldContext_ShopPart_unitPrice(ctx, field)
+	case "makeId":
+		return ec.fieldContext_ShopPart_makeId(ctx, field)
+	case "modelId":
+		return ec.fieldContext_ShopPart_modelId(ctx, field)
+	case "year":
+		return ec.fieldContext_ShopPart_year(ctx, field)
+	case "locationId":
+		return ec.fieldContext_ShopPart_locationId(ctx, field)
+	case "batches":
+		return ec.fieldContext_ShopPart_batches(ctx, field)
+	case "createdAt":
+		return ec.fieldContext_ShopPart_createdAt(ctx, field)
+	case "updatedAt":
+		return ec.fieldContext_ShopPart_updatedAt(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ShopPart", field.Name)
+}
+
+func (ec *executionContext) childFields_ShopPartConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "items":
+		return ec.fieldContext_ShopPartConnection_items(ctx, field)
+	case "total":
+		return ec.fieldContext_ShopPartConnection_total(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ShopPartConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_ShopService(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_ShopService_id(ctx, field)
+	case "tenantId":
+		return ec.fieldContext_ShopService_tenantId(ctx, field)
+	case "serviceTypeId":
+		return ec.fieldContext_ShopService_serviceTypeId(ctx, field)
+	case "name":
+		return ec.fieldContext_ShopService_name(ctx, field)
+	case "code":
+		return ec.fieldContext_ShopService_code(ctx, field)
+	case "system":
+		return ec.fieldContext_ShopService_system(ctx, field)
+	case "category":
+		return ec.fieldContext_ShopService_category(ctx, field)
+	case "estimatedHours":
+		return ec.fieldContext_ShopService_estimatedHours(ctx, field)
+	case "isActive":
+		return ec.fieldContext_ShopService_isActive(ctx, field)
+	case "createdAt":
+		return ec.fieldContext_ShopService_createdAt(ctx, field)
+	case "updatedAt":
+		return ec.fieldContext_ShopService_updatedAt(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ShopService", field.Name)
+}
+
+func (ec *executionContext) childFields_ShopServiceConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "items":
+		return ec.fieldContext_ShopServiceConnection_items(ctx, field)
+	case "total":
+		return ec.fieldContext_ShopServiceConnection_total(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ShopServiceConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_ShopTool(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_ShopTool_id(ctx, field)
+	case "tenantId":
+		return ec.fieldContext_ShopTool_tenantId(ctx, field)
+	case "name":
+		return ec.fieldContext_ShopTool_name(ctx, field)
+	case "description":
+		return ec.fieldContext_ShopTool_description(ctx, field)
+	case "quantity":
+		return ec.fieldContext_ShopTool_quantity(ctx, field)
+	case "status":
+		return ec.fieldContext_ShopTool_status(ctx, field)
+	case "createdAt":
+		return ec.fieldContext_ShopTool_createdAt(ctx, field)
+	case "updatedAt":
+		return ec.fieldContext_ShopTool_updatedAt(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ShopTool", field.Name)
+}
+
+func (ec *executionContext) childFields_ShopToolConnection(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "items":
+		return ec.fieldContext_ShopToolConnection_items(ctx, field)
+	case "total":
+		return ec.fieldContext_ShopToolConnection_total(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type ShopToolConnection", field.Name)
 }
 
 func (ec *executionContext) childFields_StaffAssignment(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -1750,6 +2597,48 @@ func (ec *executionContext) field_Entity_findCustomerByID_args(ctx context.Conte
 	return args, nil
 }
 
+func (ec *executionContext) field_Entity_findShopPartByID_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Entity_findShopServiceByID_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Entity_findShopToolByID_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Entity_findStaffAssignmentByID_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -1775,6 +2664,20 @@ func (ec *executionContext) field_Entity_findVehicleByID_args(ctx context.Contex
 		return nil, err
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_addPartBatch_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (model.CreatePartBatchInput, error) {
+			return ec.unmarshalNCreatePartBatchInput2backendᚋservicesᚋrepairᚋmodelᚐCreatePartBatchInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -1828,6 +2731,48 @@ func (ec *executionContext) field_Mutation_createCustomer_args(ctx context.Conte
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_createShopPart_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (model.CreateShopPartInput, error) {
+			return ec.unmarshalNCreateShopPartInput2backendᚋservicesᚋrepairᚋmodelᚐCreateShopPartInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createShopService_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (model.CreateShopServiceInput, error) {
+			return ec.unmarshalNCreateShopServiceInput2backendᚋservicesᚋrepairᚋmodelᚐCreateShopServiceInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createShopTool_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (model.CreateShopToolInput, error) {
+			return ec.unmarshalNCreateShopToolInput2backendᚋservicesᚋrepairᚋmodelᚐCreateShopToolInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_createStaffAssignment_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -1871,6 +2816,62 @@ func (ec *executionContext) field_Mutation_deleteAppointment_args(ctx context.Co
 }
 
 func (ec *executionContext) field_Mutation_deleteCustomer_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deletePartBatch_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteShopPart_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteShopService_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteShopTool_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
@@ -2014,6 +3015,72 @@ func (ec *executionContext) field_Mutation_updateCustomer_args(ctx context.Conte
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_updatePartBatch_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (model.UpdatePartBatchInput, error) {
+			return ec.unmarshalNUpdatePartBatchInput2backendᚋservicesᚋrepairᚋmodelᚐUpdatePartBatchInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateShopPart_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (model.UpdateShopPartInput, error) {
+			return ec.unmarshalNUpdateShopPartInput2backendᚋservicesᚋrepairᚋmodelᚐUpdateShopPartInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateShopTool_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (model.UpdateShopToolInput, error) {
+			return ec.unmarshalNUpdateShopToolInput2backendᚋservicesᚋrepairᚋmodelᚐUpdateShopToolInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_updateStaffAssignment_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -2129,6 +3196,48 @@ func (ec *executionContext) field_Query_customer_args(ctx context.Context, rawAr
 }
 
 func (ec *executionContext) field_Query_customers_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "tenantId",
+		func(ctx context.Context, v any) (*string, error) {
+			return ec.unmarshalOID2ᚖstring(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["tenantId"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_shopParts_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "tenantId",
+		func(ctx context.Context, v any) (*string, error) {
+			return ec.unmarshalOID2ᚖstring(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["tenantId"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_shopServices_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "tenantId",
+		func(ctx context.Context, v any) (*string, error) {
+			return ec.unmarshalOID2ᚖstring(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["tenantId"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_shopTools_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "tenantId",
@@ -3334,6 +4443,138 @@ func (ec *executionContext) fieldContext_Entity_findCustomerByID(ctx context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _Entity_findShopPartByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Entity_findShopPartByID(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Entity().FindShopPartByID(ctx, fc.Args["id"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.ShopPart) graphql.Marshaler {
+			return ec.marshalNShopPart2ᚖbackendᚋservicesᚋrepairᚋmodelᚐShopPart(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Entity_findShopPartByID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Entity",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ShopPart(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Entity_findShopPartByID_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Entity_findShopServiceByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Entity_findShopServiceByID(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Entity().FindShopServiceByID(ctx, fc.Args["id"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.ShopService) graphql.Marshaler {
+			return ec.marshalNShopService2ᚖbackendᚋservicesᚋrepairᚋmodelᚐShopService(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Entity_findShopServiceByID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Entity",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ShopService(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Entity_findShopServiceByID_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Entity_findShopToolByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Entity_findShopToolByID(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Entity().FindShopToolByID(ctx, fc.Args["id"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.ShopTool) graphql.Marshaler {
+			return ec.marshalNShopTool2ᚖbackendᚋservicesᚋrepairᚋmodelᚐShopTool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Entity_findShopToolByID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Entity",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ShopTool(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Entity_findShopToolByID_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Entity_findStaffAssignmentByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -4126,6 +5367,628 @@ func (ec *executionContext) fieldContext_Mutation_completeStaffAssignment(ctx co
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_createShopService(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_createShopService(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().CreateShopService(ctx, fc.Args["input"].(model.CreateShopServiceInput))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.ShopService) graphql.Marshaler {
+			return ec.marshalNShopService2ᚖbackendᚋservicesᚋrepairᚋmodelᚐShopService(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_createShopService(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ShopService(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createShopService_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_deleteShopService(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_deleteShopService(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().DeleteShopService(ctx, fc.Args["id"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_deleteShopService(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deleteShopService_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_createShopPart(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_createShopPart(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().CreateShopPart(ctx, fc.Args["input"].(model.CreateShopPartInput))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.ShopPart) graphql.Marshaler {
+			return ec.marshalNShopPart2ᚖbackendᚋservicesᚋrepairᚋmodelᚐShopPart(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_createShopPart(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ShopPart(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createShopPart_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateShopPart(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_updateShopPart(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().UpdateShopPart(ctx, fc.Args["id"].(string), fc.Args["input"].(model.UpdateShopPartInput))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.ShopPart) graphql.Marshaler {
+			return ec.marshalNShopPart2ᚖbackendᚋservicesᚋrepairᚋmodelᚐShopPart(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_updateShopPart(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ShopPart(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateShopPart_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_deleteShopPart(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_deleteShopPart(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().DeleteShopPart(ctx, fc.Args["id"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_deleteShopPart(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deleteShopPart_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_addPartBatch(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_addPartBatch(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().AddPartBatch(ctx, fc.Args["input"].(model.CreatePartBatchInput))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.PartBatch) graphql.Marshaler {
+			return ec.marshalNPartBatch2ᚖbackendᚋservicesᚋrepairᚋmodelᚐPartBatch(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_addPartBatch(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_PartBatch(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_addPartBatch_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updatePartBatch(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_updatePartBatch(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().UpdatePartBatch(ctx, fc.Args["id"].(string), fc.Args["input"].(model.UpdatePartBatchInput))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.PartBatch) graphql.Marshaler {
+			return ec.marshalNPartBatch2ᚖbackendᚋservicesᚋrepairᚋmodelᚐPartBatch(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_updatePartBatch(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_PartBatch(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updatePartBatch_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_deletePartBatch(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_deletePartBatch(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().DeletePartBatch(ctx, fc.Args["id"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_deletePartBatch(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deletePartBatch_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_createShopTool(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_createShopTool(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().CreateShopTool(ctx, fc.Args["input"].(model.CreateShopToolInput))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.ShopTool) graphql.Marshaler {
+			return ec.marshalNShopTool2ᚖbackendᚋservicesᚋrepairᚋmodelᚐShopTool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_createShopTool(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ShopTool(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createShopTool_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateShopTool(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_updateShopTool(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().UpdateShopTool(ctx, fc.Args["id"].(string), fc.Args["input"].(model.UpdateShopToolInput))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.ShopTool) graphql.Marshaler {
+			return ec.marshalNShopTool2ᚖbackendᚋservicesᚋrepairᚋmodelᚐShopTool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_updateShopTool(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ShopTool(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateShopTool_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_deleteShopTool(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_deleteShopTool(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().DeleteShopTool(ctx, fc.Args["id"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_deleteShopTool(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deleteShopTool_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PartBatch_id(ctx context.Context, field graphql.CollectedField, obj *model.PartBatch) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_PartBatch_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_PartBatch_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("PartBatch", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _PartBatch_partId(ctx context.Context, field graphql.CollectedField, obj *model.PartBatch) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_PartBatch_partId(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.PartID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_PartBatch_partId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("PartBatch", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _PartBatch_quantity(ctx context.Context, field graphql.CollectedField, obj *model.PartBatch) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_PartBatch_quantity(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Quantity, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_PartBatch_quantity(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("PartBatch", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _PartBatch_unitCost(ctx context.Context, field graphql.CollectedField, obj *model.PartBatch) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_PartBatch_unitCost(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.UnitCost, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v float64) graphql.Marshaler {
+			return ec.marshalNFloat2float64(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_PartBatch_unitCost(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("PartBatch", field, false, false, errors.New("field of type Float does not have child fields"))
+}
+
+func (ec *executionContext) _PartBatch_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.PartBatch) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_PartBatch_createdAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.CreatedAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_PartBatch_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("PartBatch", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _PartBatch_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.PartBatch) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_PartBatch_updatedAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.UpdatedAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_PartBatch_updatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("PartBatch", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
 func (ec *executionContext) _Query_appointment(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -4478,6 +6341,138 @@ func (ec *executionContext) fieldContext_Query_staffActiveAssignments(ctx contex
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_shopServices(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_shopServices(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().ShopServices(ctx, fc.Args["tenantId"].(*string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.ShopServiceConnection) graphql.Marshaler {
+			return ec.marshalNShopServiceConnection2ᚖbackendᚋservicesᚋrepairᚋmodelᚐShopServiceConnection(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_shopServices(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ShopServiceConnection(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_shopServices_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_shopParts(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_shopParts(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().ShopParts(ctx, fc.Args["tenantId"].(*string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.ShopPartConnection) graphql.Marshaler {
+			return ec.marshalNShopPartConnection2ᚖbackendᚋservicesᚋrepairᚋmodelᚐShopPartConnection(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_shopParts(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ShopPartConnection(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_shopParts_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_shopTools(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_shopTools(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().ShopTools(ctx, fc.Args["tenantId"].(*string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.ShopToolConnection) graphql.Marshaler {
+			return ec.marshalNShopToolConnection2ᚖbackendᚋservicesᚋrepairᚋmodelᚐShopToolConnection(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_shopTools(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ShopToolConnection(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_shopTools_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query__entities(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -4628,6 +6623,939 @@ func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field
 		},
 	}
 	return fc, nil
+}
+
+func (ec *executionContext) _ShopPart_id(ctx context.Context, field graphql.CollectedField, obj *model.ShopPart) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopPart_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ShopPart_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopPart", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _ShopPart_tenantId(ctx context.Context, field graphql.CollectedField, obj *model.ShopPart) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopPart_tenantId(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.TenantID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ShopPart_tenantId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopPart", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _ShopPart_name(ctx context.Context, field graphql.CollectedField, obj *model.ShopPart) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopPart_name(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ShopPart_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopPart", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ShopPart_sku(ctx context.Context, field graphql.CollectedField, obj *model.ShopPart) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopPart_sku(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Sku, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_ShopPart_sku(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopPart", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ShopPart_description(ctx context.Context, field graphql.CollectedField, obj *model.ShopPart) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopPart_description(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Description, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_ShopPart_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopPart", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ShopPart_quantity(ctx context.Context, field graphql.CollectedField, obj *model.ShopPart) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopPart_quantity(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Quantity, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ShopPart_quantity(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopPart", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _ShopPart_unitPrice(ctx context.Context, field graphql.CollectedField, obj *model.ShopPart) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopPart_unitPrice(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.UnitPrice, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *float64) graphql.Marshaler {
+			return ec.marshalOFloat2ᚖfloat64(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_ShopPart_unitPrice(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopPart", field, false, false, errors.New("field of type Float does not have child fields"))
+}
+
+func (ec *executionContext) _ShopPart_makeId(ctx context.Context, field graphql.CollectedField, obj *model.ShopPart) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopPart_makeId(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.MakeID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_ShopPart_makeId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopPart", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ShopPart_modelId(ctx context.Context, field graphql.CollectedField, obj *model.ShopPart) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopPart_modelId(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ModelID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_ShopPart_modelId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopPart", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ShopPart_year(ctx context.Context, field graphql.CollectedField, obj *model.ShopPart) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopPart_year(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Year, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *int) graphql.Marshaler {
+			return ec.marshalOInt2ᚖint(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_ShopPart_year(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopPart", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _ShopPart_locationId(ctx context.Context, field graphql.CollectedField, obj *model.ShopPart) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopPart_locationId(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.LocationID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_ShopPart_locationId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopPart", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ShopPart_batches(ctx context.Context, field graphql.CollectedField, obj *model.ShopPart) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopPart_batches(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Batches, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.PartBatch) graphql.Marshaler {
+			return ec.marshalNPartBatch2ᚕᚖbackendᚋservicesᚋrepairᚋmodelᚐPartBatchᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ShopPart_batches(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ShopPart",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_PartBatch(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ShopPart_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.ShopPart) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopPart_createdAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.CreatedAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ShopPart_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopPart", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ShopPart_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.ShopPart) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopPart_updatedAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.UpdatedAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ShopPart_updatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopPart", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ShopPartConnection_items(ctx context.Context, field graphql.CollectedField, obj *model.ShopPartConnection) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopPartConnection_items(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Items, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.ShopPart) graphql.Marshaler {
+			return ec.marshalNShopPart2ᚕᚖbackendᚋservicesᚋrepairᚋmodelᚐShopPartᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ShopPartConnection_items(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ShopPartConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ShopPart(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ShopPartConnection_total(ctx context.Context, field graphql.CollectedField, obj *model.ShopPartConnection) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopPartConnection_total(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Total, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ShopPartConnection_total(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopPartConnection", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _ShopService_id(ctx context.Context, field graphql.CollectedField, obj *model.ShopService) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopService_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ShopService_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopService", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _ShopService_tenantId(ctx context.Context, field graphql.CollectedField, obj *model.ShopService) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopService_tenantId(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.TenantID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ShopService_tenantId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopService", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _ShopService_serviceTypeId(ctx context.Context, field graphql.CollectedField, obj *model.ShopService) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopService_serviceTypeId(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ServiceTypeID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ShopService_serviceTypeId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopService", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _ShopService_name(ctx context.Context, field graphql.CollectedField, obj *model.ShopService) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopService_name(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ShopService_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopService", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ShopService_code(ctx context.Context, field graphql.CollectedField, obj *model.ShopService) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopService_code(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Code, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_ShopService_code(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopService", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ShopService_system(ctx context.Context, field graphql.CollectedField, obj *model.ShopService) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopService_system(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.System, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_ShopService_system(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopService", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ShopService_category(ctx context.Context, field graphql.CollectedField, obj *model.ShopService) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopService_category(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Category, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_ShopService_category(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopService", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ShopService_estimatedHours(ctx context.Context, field graphql.CollectedField, obj *model.ShopService) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopService_estimatedHours(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.EstimatedHours, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *float64) graphql.Marshaler {
+			return ec.marshalOFloat2ᚖfloat64(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_ShopService_estimatedHours(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopService", field, false, false, errors.New("field of type Float does not have child fields"))
+}
+
+func (ec *executionContext) _ShopService_isActive(ctx context.Context, field graphql.CollectedField, obj *model.ShopService) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopService_isActive(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.IsActive, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ShopService_isActive(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopService", field, false, false, errors.New("field of type Boolean does not have child fields"))
+}
+
+func (ec *executionContext) _ShopService_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.ShopService) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopService_createdAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.CreatedAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ShopService_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopService", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ShopService_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.ShopService) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopService_updatedAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.UpdatedAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ShopService_updatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopService", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ShopServiceConnection_items(ctx context.Context, field graphql.CollectedField, obj *model.ShopServiceConnection) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopServiceConnection_items(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Items, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.ShopService) graphql.Marshaler {
+			return ec.marshalNShopService2ᚕᚖbackendᚋservicesᚋrepairᚋmodelᚐShopServiceᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ShopServiceConnection_items(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ShopServiceConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ShopService(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ShopServiceConnection_total(ctx context.Context, field graphql.CollectedField, obj *model.ShopServiceConnection) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopServiceConnection_total(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Total, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ShopServiceConnection_total(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopServiceConnection", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _ShopTool_id(ctx context.Context, field graphql.CollectedField, obj *model.ShopTool) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopTool_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ShopTool_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopTool", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _ShopTool_tenantId(ctx context.Context, field graphql.CollectedField, obj *model.ShopTool) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopTool_tenantId(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.TenantID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ShopTool_tenantId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopTool", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _ShopTool_name(ctx context.Context, field graphql.CollectedField, obj *model.ShopTool) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopTool_name(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ShopTool_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopTool", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ShopTool_description(ctx context.Context, field graphql.CollectedField, obj *model.ShopTool) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopTool_description(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Description, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_ShopTool_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopTool", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ShopTool_quantity(ctx context.Context, field graphql.CollectedField, obj *model.ShopTool) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopTool_quantity(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Quantity, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ShopTool_quantity(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopTool", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _ShopTool_status(ctx context.Context, field graphql.CollectedField, obj *model.ShopTool) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopTool_status(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Status, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ShopTool_status(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopTool", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ShopTool_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.ShopTool) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopTool_createdAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.CreatedAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ShopTool_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopTool", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ShopTool_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.ShopTool) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopTool_updatedAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.UpdatedAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ShopTool_updatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopTool", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _ShopToolConnection_items(ctx context.Context, field graphql.CollectedField, obj *model.ShopToolConnection) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopToolConnection_items(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Items, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.ShopTool) graphql.Marshaler {
+			return ec.marshalNShopTool2ᚕᚖbackendᚋservicesᚋrepairᚋmodelᚐShopToolᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ShopToolConnection_items(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ShopToolConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_ShopTool(ctx, field)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ShopToolConnection_total(ctx context.Context, field graphql.CollectedField, obj *model.ShopToolConnection) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_ShopToolConnection_total(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Total, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_ShopToolConnection_total(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("ShopToolConnection", field, false, false, errors.New("field of type Int does not have child fields"))
 }
 
 func (ec *executionContext) _StaffAssignment_id(ctx context.Context, field graphql.CollectedField, obj *model.StaffAssignment) (ret graphql.Marshaler) {
@@ -6648,6 +9576,273 @@ func (ec *executionContext) unmarshalInputCreateCustomerInput(ctx context.Contex
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputCreatePartBatchInput(ctx context.Context, obj any) (model.CreatePartBatchInput, error) {
+	var it model.CreatePartBatchInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"partId", "quantity", "unitCost"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "partId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("partId"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PartID = data
+		case "quantity":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("quantity"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Quantity = data
+		case "unitCost":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("unitCost"))
+			data, err := ec.unmarshalNFloat2float64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UnitCost = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateShopPartInput(ctx context.Context, obj any) (model.CreateShopPartInput, error) {
+	var it model.CreateShopPartInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"tenantId", "name", "sku", "description", "quantity", "unitPrice", "makeId", "modelId", "year", "locationId"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "tenantId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tenantId"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TenantID = data
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "sku":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sku"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Sku = data
+		case "description":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Description = data
+		case "quantity":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("quantity"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Quantity = data
+		case "unitPrice":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("unitPrice"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UnitPrice = data
+		case "makeId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("makeId"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MakeID = data
+		case "modelId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("modelId"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ModelID = data
+		case "year":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("year"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Year = data
+		case "locationId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("locationId"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LocationID = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateShopServiceInput(ctx context.Context, obj any) (model.CreateShopServiceInput, error) {
+	var it model.CreateShopServiceInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"tenantId", "serviceTypeId", "name", "code", "system", "category", "estimatedHours"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "tenantId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tenantId"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TenantID = data
+		case "serviceTypeId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("serviceTypeId"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ServiceTypeID = data
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "code":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Code = data
+		case "system":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("system"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.System = data
+		case "category":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("category"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Category = data
+		case "estimatedHours":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("estimatedHours"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EstimatedHours = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateShopToolInput(ctx context.Context, obj any) (model.CreateShopToolInput, error) {
+	var it model.CreateShopToolInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"tenantId", "name", "description", "quantity", "status"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "tenantId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tenantId"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TenantID = data
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "description":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Description = data
+		case "quantity":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("quantity"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Quantity = data
+		case "status":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Status = data
+		}
+	}
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCreateStaffAssignmentInput(ctx context.Context, obj any) (model.CreateStaffAssignmentInput, error) {
 	var it model.CreateStaffAssignmentInput
 	if obj == nil {
@@ -7013,6 +10208,180 @@ func (ec *executionContext) unmarshalInputUpdateCustomerInput(ctx context.Contex
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputUpdatePartBatchInput(ctx context.Context, obj any) (model.UpdatePartBatchInput, error) {
+	var it model.UpdatePartBatchInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"quantity", "unitCost"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "quantity":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("quantity"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Quantity = data
+		case "unitCost":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("unitCost"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UnitCost = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateShopPartInput(ctx context.Context, obj any) (model.UpdateShopPartInput, error) {
+	var it model.UpdateShopPartInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "sku", "description", "quantity", "unitPrice", "makeId", "modelId", "year", "locationId"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "sku":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sku"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Sku = data
+		case "description":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Description = data
+		case "quantity":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("quantity"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Quantity = data
+		case "unitPrice":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("unitPrice"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UnitPrice = data
+		case "makeId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("makeId"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MakeID = data
+		case "modelId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("modelId"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ModelID = data
+		case "year":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("year"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Year = data
+		case "locationId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("locationId"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LocationID = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateShopToolInput(ctx context.Context, obj any) (model.UpdateShopToolInput, error) {
+	var it model.UpdateShopToolInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "description", "quantity", "status"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "description":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Description = data
+		case "quantity":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("quantity"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Quantity = data
+		case "status":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Status = data
+		}
+	}
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUpdateStaffAssignmentInput(ctx context.Context, obj any) (model.UpdateStaffAssignmentInput, error) {
 	var it model.UpdateStaffAssignmentInput
 	if obj == nil {
@@ -7172,6 +10541,27 @@ func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, 
 			return graphql.Null
 		}
 		return ec._StaffAssignment(ctx, sel, obj)
+	case model.ShopTool:
+		return ec._ShopTool(ctx, sel, &obj)
+	case *model.ShopTool:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._ShopTool(ctx, sel, obj)
+	case model.ShopService:
+		return ec._ShopService(ctx, sel, &obj)
+	case *model.ShopService:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._ShopService(ctx, sel, obj)
+	case model.ShopPart:
+		return ec._ShopPart(ctx, sel, &obj)
+	case *model.ShopPart:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._ShopPart(ctx, sel, obj)
 	case model.Customer:
 		return ec._Customer(ctx, sel, &obj)
 	case *model.Customer:
@@ -7557,6 +10947,72 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "findShopPartByID":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Entity_findShopPartByID(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "findShopServiceByID":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Entity_findShopServiceByID(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "findShopToolByID":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Entity_findShopToolByID(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "findStaffAssignmentByID":
 			field := field
 
@@ -7752,6 +11208,147 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_completeStaffAssignment(ctx, field)
 			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "createShopService":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createShopService(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "deleteShopService":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deleteShopService(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "createShopPart":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createShopPart(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updateShopPart":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateShopPart(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "deleteShopPart":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deleteShopPart(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "addPartBatch":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_addPartBatch(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updatePartBatch":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updatePartBatch(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "deletePartBatch":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deletePartBatch(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "createShopTool":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createShopTool(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updateShopTool":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateShopTool(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "deleteShopTool":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deleteShopTool(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var partBatchImplementors = []string{"PartBatch"}
+
+func (ec *executionContext) _PartBatch(ctx context.Context, sel ast.SelectionSet, obj *model.PartBatch) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, partBatchImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PartBatch")
+		case "id":
+			out.Values[i] = ec._PartBatch_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "partId":
+			out.Values[i] = ec._PartBatch_partId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "quantity":
+			out.Values[i] = ec._PartBatch_quantity(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "unitCost":
+			out.Values[i] = ec._PartBatch_unitCost(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "createdAt":
+			out.Values[i] = ec._PartBatch_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updatedAt":
+			out.Values[i] = ec._PartBatch_updatedAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -7964,6 +11561,72 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "shopServices":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_shopServices(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "shopParts":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_shopParts(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "shopTools":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_shopTools(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "_entities":
 			field := field
 
@@ -8016,6 +11679,369 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___schema(ctx, field)
 			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var shopPartImplementors = []string{"ShopPart", "_Entity"}
+
+func (ec *executionContext) _ShopPart(ctx context.Context, sel ast.SelectionSet, obj *model.ShopPart) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, shopPartImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ShopPart")
+		case "id":
+			out.Values[i] = ec._ShopPart_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "tenantId":
+			out.Values[i] = ec._ShopPart_tenantId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._ShopPart_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "sku":
+			out.Values[i] = ec._ShopPart_sku(ctx, field, obj)
+		case "description":
+			out.Values[i] = ec._ShopPart_description(ctx, field, obj)
+		case "quantity":
+			out.Values[i] = ec._ShopPart_quantity(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "unitPrice":
+			out.Values[i] = ec._ShopPart_unitPrice(ctx, field, obj)
+		case "makeId":
+			out.Values[i] = ec._ShopPart_makeId(ctx, field, obj)
+		case "modelId":
+			out.Values[i] = ec._ShopPart_modelId(ctx, field, obj)
+		case "year":
+			out.Values[i] = ec._ShopPart_year(ctx, field, obj)
+		case "locationId":
+			out.Values[i] = ec._ShopPart_locationId(ctx, field, obj)
+		case "batches":
+			out.Values[i] = ec._ShopPart_batches(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "createdAt":
+			out.Values[i] = ec._ShopPart_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updatedAt":
+			out.Values[i] = ec._ShopPart_updatedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var shopPartConnectionImplementors = []string{"ShopPartConnection"}
+
+func (ec *executionContext) _ShopPartConnection(ctx context.Context, sel ast.SelectionSet, obj *model.ShopPartConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, shopPartConnectionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ShopPartConnection")
+		case "items":
+			out.Values[i] = ec._ShopPartConnection_items(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "total":
+			out.Values[i] = ec._ShopPartConnection_total(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var shopServiceImplementors = []string{"ShopService", "_Entity"}
+
+func (ec *executionContext) _ShopService(ctx context.Context, sel ast.SelectionSet, obj *model.ShopService) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, shopServiceImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ShopService")
+		case "id":
+			out.Values[i] = ec._ShopService_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "tenantId":
+			out.Values[i] = ec._ShopService_tenantId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "serviceTypeId":
+			out.Values[i] = ec._ShopService_serviceTypeId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._ShopService_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "code":
+			out.Values[i] = ec._ShopService_code(ctx, field, obj)
+		case "system":
+			out.Values[i] = ec._ShopService_system(ctx, field, obj)
+		case "category":
+			out.Values[i] = ec._ShopService_category(ctx, field, obj)
+		case "estimatedHours":
+			out.Values[i] = ec._ShopService_estimatedHours(ctx, field, obj)
+		case "isActive":
+			out.Values[i] = ec._ShopService_isActive(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "createdAt":
+			out.Values[i] = ec._ShopService_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updatedAt":
+			out.Values[i] = ec._ShopService_updatedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var shopServiceConnectionImplementors = []string{"ShopServiceConnection"}
+
+func (ec *executionContext) _ShopServiceConnection(ctx context.Context, sel ast.SelectionSet, obj *model.ShopServiceConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, shopServiceConnectionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ShopServiceConnection")
+		case "items":
+			out.Values[i] = ec._ShopServiceConnection_items(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "total":
+			out.Values[i] = ec._ShopServiceConnection_total(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var shopToolImplementors = []string{"ShopTool", "_Entity"}
+
+func (ec *executionContext) _ShopTool(ctx context.Context, sel ast.SelectionSet, obj *model.ShopTool) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, shopToolImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ShopTool")
+		case "id":
+			out.Values[i] = ec._ShopTool_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "tenantId":
+			out.Values[i] = ec._ShopTool_tenantId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._ShopTool_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "description":
+			out.Values[i] = ec._ShopTool_description(ctx, field, obj)
+		case "quantity":
+			out.Values[i] = ec._ShopTool_quantity(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "status":
+			out.Values[i] = ec._ShopTool_status(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "createdAt":
+			out.Values[i] = ec._ShopTool_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updatedAt":
+			out.Values[i] = ec._ShopTool_updatedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var shopToolConnectionImplementors = []string{"ShopToolConnection"}
+
+func (ec *executionContext) _ShopToolConnection(ctx context.Context, sel ast.SelectionSet, obj *model.ShopToolConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, shopToolConnectionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ShopToolConnection")
+		case "items":
+			out.Values[i] = ec._ShopToolConnection_items(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "total":
+			out.Values[i] = ec._ShopToolConnection_total(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8736,6 +12762,26 @@ func (ec *executionContext) unmarshalNCreateCustomerInput2backendᚋservicesᚋr
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNCreatePartBatchInput2backendᚋservicesᚋrepairᚋmodelᚐCreatePartBatchInput(ctx context.Context, v any) (model.CreatePartBatchInput, error) {
+	res, err := ec.unmarshalInputCreatePartBatchInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNCreateShopPartInput2backendᚋservicesᚋrepairᚋmodelᚐCreateShopPartInput(ctx context.Context, v any) (model.CreateShopPartInput, error) {
+	res, err := ec.unmarshalInputCreateShopPartInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNCreateShopServiceInput2backendᚋservicesᚋrepairᚋmodelᚐCreateShopServiceInput(ctx context.Context, v any) (model.CreateShopServiceInput, error) {
+	res, err := ec.unmarshalInputCreateShopServiceInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNCreateShopToolInput2backendᚋservicesᚋrepairᚋmodelᚐCreateShopToolInput(ctx context.Context, v any) (model.CreateShopToolInput, error) {
+	res, err := ec.unmarshalInputCreateShopToolInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNCreateStaffAssignmentInput2backendᚋservicesᚋrepairᚋmodelᚐCreateStaffAssignmentInput(ctx context.Context, v any) (model.CreateStaffAssignmentInput, error) {
 	res, err := ec.unmarshalInputCreateStaffAssignmentInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -8854,6 +12900,168 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
+func (ec *executionContext) marshalNPartBatch2backendᚋservicesᚋrepairᚋmodelᚐPartBatch(ctx context.Context, sel ast.SelectionSet, v model.PartBatch) graphql.Marshaler {
+	return ec._PartBatch(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNPartBatch2ᚕᚖbackendᚋservicesᚋrepairᚋmodelᚐPartBatchᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.PartBatch) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNPartBatch2ᚖbackendᚋservicesᚋrepairᚋmodelᚐPartBatch(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNPartBatch2ᚖbackendᚋservicesᚋrepairᚋmodelᚐPartBatch(ctx context.Context, sel ast.SelectionSet, v *model.PartBatch) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._PartBatch(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNShopPart2backendᚋservicesᚋrepairᚋmodelᚐShopPart(ctx context.Context, sel ast.SelectionSet, v model.ShopPart) graphql.Marshaler {
+	return ec._ShopPart(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNShopPart2ᚕᚖbackendᚋservicesᚋrepairᚋmodelᚐShopPartᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ShopPart) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNShopPart2ᚖbackendᚋservicesᚋrepairᚋmodelᚐShopPart(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNShopPart2ᚖbackendᚋservicesᚋrepairᚋmodelᚐShopPart(ctx context.Context, sel ast.SelectionSet, v *model.ShopPart) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ShopPart(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNShopPartConnection2backendᚋservicesᚋrepairᚋmodelᚐShopPartConnection(ctx context.Context, sel ast.SelectionSet, v model.ShopPartConnection) graphql.Marshaler {
+	return ec._ShopPartConnection(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNShopPartConnection2ᚖbackendᚋservicesᚋrepairᚋmodelᚐShopPartConnection(ctx context.Context, sel ast.SelectionSet, v *model.ShopPartConnection) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ShopPartConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNShopService2backendᚋservicesᚋrepairᚋmodelᚐShopService(ctx context.Context, sel ast.SelectionSet, v model.ShopService) graphql.Marshaler {
+	return ec._ShopService(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNShopService2ᚕᚖbackendᚋservicesᚋrepairᚋmodelᚐShopServiceᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ShopService) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNShopService2ᚖbackendᚋservicesᚋrepairᚋmodelᚐShopService(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNShopService2ᚖbackendᚋservicesᚋrepairᚋmodelᚐShopService(ctx context.Context, sel ast.SelectionSet, v *model.ShopService) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ShopService(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNShopServiceConnection2backendᚋservicesᚋrepairᚋmodelᚐShopServiceConnection(ctx context.Context, sel ast.SelectionSet, v model.ShopServiceConnection) graphql.Marshaler {
+	return ec._ShopServiceConnection(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNShopServiceConnection2ᚖbackendᚋservicesᚋrepairᚋmodelᚐShopServiceConnection(ctx context.Context, sel ast.SelectionSet, v *model.ShopServiceConnection) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ShopServiceConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNShopTool2backendᚋservicesᚋrepairᚋmodelᚐShopTool(ctx context.Context, sel ast.SelectionSet, v model.ShopTool) graphql.Marshaler {
+	return ec._ShopTool(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNShopTool2ᚕᚖbackendᚋservicesᚋrepairᚋmodelᚐShopToolᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ShopTool) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNShopTool2ᚖbackendᚋservicesᚋrepairᚋmodelᚐShopTool(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNShopTool2ᚖbackendᚋservicesᚋrepairᚋmodelᚐShopTool(ctx context.Context, sel ast.SelectionSet, v *model.ShopTool) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ShopTool(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNShopToolConnection2backendᚋservicesᚋrepairᚋmodelᚐShopToolConnection(ctx context.Context, sel ast.SelectionSet, v model.ShopToolConnection) graphql.Marshaler {
+	return ec._ShopToolConnection(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNShopToolConnection2ᚖbackendᚋservicesᚋrepairᚋmodelᚐShopToolConnection(ctx context.Context, sel ast.SelectionSet, v *model.ShopToolConnection) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ShopToolConnection(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNStaffAssignment2backendᚋservicesᚋrepairᚋmodelᚐStaffAssignment(ctx context.Context, sel ast.SelectionSet, v model.StaffAssignment) graphql.Marshaler {
 	return ec._StaffAssignment(ctx, sel, &v)
 }
@@ -8907,6 +13115,21 @@ func (ec *executionContext) unmarshalNUpdateAppointmentInput2backendᚋservices�
 
 func (ec *executionContext) unmarshalNUpdateCustomerInput2backendᚋservicesᚋrepairᚋmodelᚐUpdateCustomerInput(ctx context.Context, v any) (model.UpdateCustomerInput, error) {
 	res, err := ec.unmarshalInputUpdateCustomerInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdatePartBatchInput2backendᚋservicesᚋrepairᚋmodelᚐUpdatePartBatchInput(ctx context.Context, v any) (model.UpdatePartBatchInput, error) {
+	res, err := ec.unmarshalInputUpdatePartBatchInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateShopPartInput2backendᚋservicesᚋrepairᚋmodelᚐUpdateShopPartInput(ctx context.Context, v any) (model.UpdateShopPartInput, error) {
+	res, err := ec.unmarshalInputUpdateShopPartInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateShopToolInput2backendᚋservicesᚋrepairᚋmodelᚐUpdateShopToolInput(ctx context.Context, v any) (model.UpdateShopToolInput, error) {
+	res, err := ec.unmarshalInputUpdateShopToolInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -9365,6 +13588,23 @@ func (ec *executionContext) marshalOCustomer2ᚖbackendᚋservicesᚋrepairᚋmo
 		return graphql.Null
 	}
 	return ec._Customer(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOFloat2ᚖfloat64(ctx context.Context, v any) (*float64, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalFloatContext(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel ast.SelectionSet, v *float64) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	_ = sel
+	res := graphql.MarshalFloatContext(*v)
+	return graphql.WrapContextMarshaler(ctx, res)
 }
 
 func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v any) (*string, error) {

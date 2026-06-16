@@ -157,6 +157,58 @@ func (r *Repository) Migrate(ctx context.Context) error {
 			notes TEXT,
 			created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 			updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+		);
+		CREATE TABLE IF NOT EXISTS repair.shop_services (
+			id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+			tenant_id UUID NOT NULL,
+			service_type_id UUID NOT NULL,
+			name TEXT NOT NULL,
+			code TEXT,
+			system TEXT,
+			category TEXT,
+			estimated_hours DECIMAL(6,2),
+			is_active BOOLEAN NOT NULL DEFAULT true,
+			created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+			updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+			UNIQUE(tenant_id, service_type_id)
+		);
+		CREATE TABLE IF NOT EXISTS repair.shop_parts (
+			id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+			tenant_id UUID NOT NULL,
+			name TEXT NOT NULL,
+			sku TEXT,
+			description TEXT,
+			quantity INTEGER NOT NULL DEFAULT 0,
+			unit_price DECIMAL(10,2) DEFAULT 0,
+			make_id UUID,
+			model_id UUID,
+			year INT,
+			location_id UUID,
+			created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+			updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+		);
+		ALTER TABLE repair.shop_parts ADD COLUMN IF NOT EXISTS make_id UUID;
+		ALTER TABLE repair.shop_parts ADD COLUMN IF NOT EXISTS model_id UUID;
+		ALTER TABLE repair.shop_parts ADD COLUMN IF NOT EXISTS year INT;
+		ALTER TABLE repair.shop_parts ADD COLUMN IF NOT EXISTS location_id UUID;
+		CREATE TABLE IF NOT EXISTS repair.part_batches (
+			id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+			part_id UUID NOT NULL REFERENCES repair.shop_parts(id) ON DELETE CASCADE,
+			tenant_id UUID NOT NULL,
+			quantity INTEGER NOT NULL DEFAULT 0,
+			unit_cost DECIMAL(10,2) NOT NULL DEFAULT 0,
+			created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+			updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+		);
+		CREATE TABLE IF NOT EXISTS repair.shop_tools (
+			id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+			tenant_id UUID NOT NULL,
+			name TEXT NOT NULL,
+			description TEXT,
+			quantity INTEGER NOT NULL DEFAULT 0,
+			status TEXT NOT NULL DEFAULT 'available',
+			created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+			updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 		)
 	`)
 	return err
@@ -377,6 +429,234 @@ func (r *Repository) UpdateAssignment(ctx context.Context, a *StaffAssignment) e
 
 func (r *Repository) DeleteAssignment(ctx context.Context, id string) error {
 	_, err := r.db.NewDelete().Model(&StaffAssignment{}).Where("id = ?", id).Exec(ctx)
+	return err
+}
+
+type ShopService struct {
+	bun.BaseModel `bun:"table:repair.shop_services"`
+
+	ID             string    `bun:"id,pk,type:uuid"`
+	TenantID       string    `bun:"tenant_id,notnull,type:uuid"`
+	ServiceTypeID  string    `bun:"service_type_id,notnull,type:uuid"`
+	Name           string    `bun:"name,notnull"`
+	Code           string    `bun:"code"`
+	System         string    `bun:"system"`
+	Category       string    `bun:"category"`
+	EstimatedHours *float64  `bun:"estimated_hours"`
+	IsActive       bool      `bun:"is_active,notnull"`
+	CreatedAt      time.Time `bun:"created_at,notnull"`
+	UpdatedAt      time.Time `bun:"updated_at,notnull"`
+}
+
+type ShopPart struct {
+	bun.BaseModel `bun:"table:repair.shop_parts"`
+
+	ID          string    `bun:"id,pk,type:uuid"`
+	TenantID    string    `bun:"tenant_id,notnull,type:uuid"`
+	Name        string    `bun:"name,notnull"`
+	SKU         string    `bun:"sku"`
+	Description string    `bun:"description"`
+	Quantity    int       `bun:"quantity,notnull"`
+	UnitPrice   float64   `bun:"unit_price"`
+	MakeID      *string   `bun:"make_id,type:uuid,nullzero"`
+	ModelID     *string   `bun:"model_id,type:uuid,nullzero"`
+	Year        *int      `bun:"year,nullzero"`
+	LocationID  *string   `bun:"location_id,type:uuid,nullzero"`
+	CreatedAt   time.Time `bun:"created_at,notnull"`
+	UpdatedAt   time.Time `bun:"updated_at,notnull"`
+}
+
+type PartBatch struct {
+	bun.BaseModel `bun:"table:repair.part_batches"`
+
+	ID        string    `bun:"id,pk,type:uuid"`
+	PartID    string    `bun:"part_id,notnull,type:uuid"`
+	TenantID  string    `bun:"tenant_id,notnull,type:uuid"`
+	Quantity  int       `bun:"quantity,notnull"`
+	UnitCost  float64   `bun:"unit_cost,notnull"`
+	CreatedAt time.Time `bun:"created_at,notnull"`
+	UpdatedAt time.Time `bun:"updated_at,notnull"`
+}
+
+type ShopTool struct {
+	bun.BaseModel `bun:"table:repair.shop_tools"`
+
+	ID          string    `bun:"id,pk,type:uuid"`
+	TenantID    string    `bun:"tenant_id,notnull,type:uuid"`
+	Name        string    `bun:"name,notnull"`
+	Description string    `bun:"description"`
+	Quantity    int       `bun:"quantity,notnull"`
+	Status      string    `bun:"status,notnull"`
+	CreatedAt   time.Time `bun:"created_at,notnull"`
+	UpdatedAt   time.Time `bun:"updated_at,notnull"`
+}
+
+func (r *Repository) CreateShopService(ctx context.Context, s *ShopService) error {
+	if s.ID == "" {
+		s.ID = uuid.New().String()
+	}
+	now := time.Now()
+	s.CreatedAt = now
+	s.UpdatedAt = now
+	_, err := r.db.NewInsert().Model(s).Exec(ctx)
+	return err
+}
+
+func (r *Repository) ListShopServices(ctx context.Context, tenantID string) ([]ShopService, error) {
+	var items []ShopService
+	err := r.db.NewSelect().Model(&items).
+		Where("tenant_id = ?", tenantID).
+		Order("name ASC").
+		Scan(ctx)
+	return items, err
+}
+
+func (r *Repository) GetShopService(ctx context.Context, id string) (*ShopService, error) {
+	s := &ShopService{}
+	err := r.db.NewSelect().Model(s).Where("id = ?", id).Scan(ctx)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("get shop service: %w", err)
+	}
+	return s, nil
+}
+
+func (r *Repository) DeleteShopService(ctx context.Context, id string) error {
+	_, err := r.db.NewDelete().Model(&ShopService{}).Where("id = ?", id).Exec(ctx)
+	return err
+}
+
+func (r *Repository) CreateShopPart(ctx context.Context, p *ShopPart) error {
+	if p.ID == "" {
+		p.ID = uuid.New().String()
+	}
+	now := time.Now()
+	p.CreatedAt = now
+	p.UpdatedAt = now
+	_, err := r.db.NewInsert().Model(p).Exec(ctx)
+	return err
+}
+
+func (r *Repository) ListShopParts(ctx context.Context, tenantID string) ([]ShopPart, error) {
+	var items []ShopPart
+	err := r.db.NewSelect().Model(&items).
+		Where("tenant_id = ?", tenantID).
+		Order("name ASC").
+		Scan(ctx)
+	return items, err
+}
+
+func (r *Repository) GetShopPart(ctx context.Context, id string) (*ShopPart, error) {
+	p := &ShopPart{}
+	err := r.db.NewSelect().Model(p).Where("id = ?", id).Scan(ctx)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("get shop part: %w", err)
+	}
+	return p, nil
+}
+
+func (r *Repository) UpdateShopPart(ctx context.Context, p *ShopPart) error {
+	p.UpdatedAt = time.Now()
+	_, err := r.db.NewUpdate().Model(p).WherePK().Exec(ctx)
+	return err
+}
+
+func (r *Repository) DeleteShopPart(ctx context.Context, id string) error {
+	_, err := r.db.NewDelete().Model(&ShopPart{}).Where("id = ?", id).Exec(ctx)
+	return err
+}
+
+func (r *Repository) CreatePartBatch(ctx context.Context, b *PartBatch) error {
+	if b.ID == "" {
+		b.ID = uuid.New().String()
+	}
+	now := time.Now()
+	b.CreatedAt = now
+	b.UpdatedAt = now
+	_, err := r.db.NewInsert().Model(b).Exec(ctx)
+	return err
+}
+
+func (r *Repository) ListPartBatches(ctx context.Context, partID string) ([]PartBatch, error) {
+	var items []PartBatch
+	err := r.db.NewSelect().Model(&items).
+		Where("part_id = ?", partID).
+		Order("created_at ASC").
+		Scan(ctx)
+	return items, err
+}
+
+func (r *Repository) GetPartBatch(ctx context.Context, id string) (*PartBatch, error) {
+	b := &PartBatch{}
+	err := r.db.NewSelect().Model(b).Where("id = ?", id).Scan(ctx)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("get part batch: %w", err)
+	}
+	return b, nil
+}
+
+func (r *Repository) UpdatePartBatch(ctx context.Context, b *PartBatch) error {
+	b.UpdatedAt = time.Now()
+	_, err := r.db.NewUpdate().Model(b).WherePK().Exec(ctx)
+	return err
+}
+
+func (r *Repository) DeletePartBatch(ctx context.Context, id string) error {
+	_, err := r.db.NewDelete().Model(&PartBatch{}).Where("id = ?", id).Exec(ctx)
+	return err
+}
+
+func (r *Repository) CreateShopTool(ctx context.Context, t *ShopTool) error {
+	if t.ID == "" {
+		t.ID = uuid.New().String()
+	}
+	if t.Status == "" {
+		t.Status = "available"
+	}
+	now := time.Now()
+	t.CreatedAt = now
+	t.UpdatedAt = now
+	_, err := r.db.NewInsert().Model(t).Exec(ctx)
+	return err
+}
+
+func (r *Repository) ListShopTools(ctx context.Context, tenantID string) ([]ShopTool, error) {
+	var items []ShopTool
+	err := r.db.NewSelect().Model(&items).
+		Where("tenant_id = ?", tenantID).
+		Order("name ASC").
+		Scan(ctx)
+	return items, err
+}
+
+func (r *Repository) GetShopTool(ctx context.Context, id string) (*ShopTool, error) {
+	t := &ShopTool{}
+	err := r.db.NewSelect().Model(t).Where("id = ?", id).Scan(ctx)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("get shop tool: %w", err)
+	}
+	return t, nil
+}
+
+func (r *Repository) UpdateShopTool(ctx context.Context, t *ShopTool) error {
+	t.UpdatedAt = time.Now()
+	_, err := r.db.NewUpdate().Model(t).WherePK().Exec(ctx)
+	return err
+}
+
+func (r *Repository) DeleteShopTool(ctx context.Context, id string) error {
+	_, err := r.db.NewDelete().Model(&ShopTool{}).Where("id = ?", id).Exec(ctx)
 	return err
 }
 

@@ -44,7 +44,7 @@ services:
     volumes:
       - nats_data:/data
     healthcheck:
-      test: ["CMD", "wget", "-q", "http://localhost:8222/healthz"]
+      test: ["CMD-SHELL", "wget -q -O- http://localhost:8222/healthz >/dev/null 2>&1 || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -311,7 +311,7 @@ services:
       args:
         SERVICE: lookup
     ports:
-      - "8090:8080"
+      - "8093:8090"
     depends_on:
       postgres:
         condition: service_healthy

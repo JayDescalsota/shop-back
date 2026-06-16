@@ -65,6 +65,43 @@ type CreateCustomerInput struct {
 	Notes    *string `json:"notes,omitempty"`
 }
 
+type CreatePartBatchInput struct {
+	PartID   string  `json:"partId"`
+	Quantity int     `json:"quantity"`
+	UnitCost float64 `json:"unitCost"`
+}
+
+type CreateShopPartInput struct {
+	TenantID    string   `json:"tenantId"`
+	Name        string   `json:"name"`
+	Sku         *string  `json:"sku,omitempty"`
+	Description *string  `json:"description,omitempty"`
+	Quantity    *int     `json:"quantity,omitempty"`
+	UnitPrice   *float64 `json:"unitPrice,omitempty"`
+	MakeID      *string  `json:"makeId,omitempty"`
+	ModelID     *string  `json:"modelId,omitempty"`
+	Year        *int     `json:"year,omitempty"`
+	LocationID  *string  `json:"locationId,omitempty"`
+}
+
+type CreateShopServiceInput struct {
+	TenantID       string   `json:"tenantId"`
+	ServiceTypeID  string   `json:"serviceTypeId"`
+	Name           string   `json:"name"`
+	Code           *string  `json:"code,omitempty"`
+	System         *string  `json:"system,omitempty"`
+	Category       *string  `json:"category,omitempty"`
+	EstimatedHours *float64 `json:"estimatedHours,omitempty"`
+}
+
+type CreateShopToolInput struct {
+	TenantID    string  `json:"tenantId"`
+	Name        string  `json:"name"`
+	Description *string `json:"description,omitempty"`
+	Quantity    *int    `json:"quantity,omitempty"`
+	Status      *string `json:"status,omitempty"`
+}
+
 type CreateStaffAssignmentInput struct {
 	TenantID      string  `json:"tenantId"`
 	AppointmentID string  `json:"appointmentId"`
@@ -118,7 +155,79 @@ type CustomerConnection struct {
 type Mutation struct {
 }
 
+type PartBatch struct {
+	ID        string  `json:"id"`
+	PartID    string  `json:"partId"`
+	Quantity  int     `json:"quantity"`
+	UnitCost  float64 `json:"unitCost"`
+	CreatedAt string  `json:"createdAt"`
+	UpdatedAt string  `json:"updatedAt"`
+}
+
 type Query struct {
+}
+
+type ShopPart struct {
+	ID          string       `json:"id"`
+	TenantID    string       `json:"tenantId"`
+	Name        string       `json:"name"`
+	Sku         *string      `json:"sku,omitempty"`
+	Description *string      `json:"description,omitempty"`
+	Quantity    int          `json:"quantity"`
+	UnitPrice   *float64     `json:"unitPrice,omitempty"`
+	MakeID      *string      `json:"makeId,omitempty"`
+	ModelID     *string      `json:"modelId,omitempty"`
+	Year        *int         `json:"year,omitempty"`
+	LocationID  *string      `json:"locationId,omitempty"`
+	Batches     []*PartBatch `json:"batches"`
+	CreatedAt   string       `json:"createdAt"`
+	UpdatedAt   string       `json:"updatedAt"`
+}
+
+func (ShopPart) IsEntity() {}
+
+type ShopPartConnection struct {
+	Items []*ShopPart `json:"items"`
+	Total int         `json:"total"`
+}
+
+type ShopService struct {
+	ID             string   `json:"id"`
+	TenantID       string   `json:"tenantId"`
+	ServiceTypeID  string   `json:"serviceTypeId"`
+	Name           string   `json:"name"`
+	Code           *string  `json:"code,omitempty"`
+	System         *string  `json:"system,omitempty"`
+	Category       *string  `json:"category,omitempty"`
+	EstimatedHours *float64 `json:"estimatedHours,omitempty"`
+	IsActive       bool     `json:"isActive"`
+	CreatedAt      string   `json:"createdAt"`
+	UpdatedAt      string   `json:"updatedAt"`
+}
+
+func (ShopService) IsEntity() {}
+
+type ShopServiceConnection struct {
+	Items []*ShopService `json:"items"`
+	Total int            `json:"total"`
+}
+
+type ShopTool struct {
+	ID          string  `json:"id"`
+	TenantID    string  `json:"tenantId"`
+	Name        string  `json:"name"`
+	Description *string `json:"description,omitempty"`
+	Quantity    int     `json:"quantity"`
+	Status      string  `json:"status"`
+	CreatedAt   string  `json:"createdAt"`
+	UpdatedAt   string  `json:"updatedAt"`
+}
+
+func (ShopTool) IsEntity() {}
+
+type ShopToolConnection struct {
+	Items []*ShopTool `json:"items"`
+	Total int         `json:"total"`
 }
 
 type StaffAssignment struct {
@@ -169,6 +278,30 @@ type UpdateCustomerInput struct {
 	Zip     *string `json:"zip,omitempty"`
 	Notes   *string `json:"notes,omitempty"`
 	Status  *string `json:"status,omitempty"`
+}
+
+type UpdatePartBatchInput struct {
+	Quantity *int     `json:"quantity,omitempty"`
+	UnitCost *float64 `json:"unitCost,omitempty"`
+}
+
+type UpdateShopPartInput struct {
+	Name        *string  `json:"name,omitempty"`
+	Sku         *string  `json:"sku,omitempty"`
+	Description *string  `json:"description,omitempty"`
+	Quantity    *int     `json:"quantity,omitempty"`
+	UnitPrice   *float64 `json:"unitPrice,omitempty"`
+	MakeID      *string  `json:"makeId,omitempty"`
+	ModelID     *string  `json:"modelId,omitempty"`
+	Year        *int     `json:"year,omitempty"`
+	LocationID  *string  `json:"locationId,omitempty"`
+}
+
+type UpdateShopToolInput struct {
+	Name        *string `json:"name,omitempty"`
+	Description *string `json:"description,omitempty"`
+	Quantity    *int    `json:"quantity,omitempty"`
+	Status      *string `json:"status,omitempty"`
 }
 
 type UpdateStaffAssignmentInput struct {

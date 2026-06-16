@@ -233,3 +233,15 @@ func (r *Repository) GetCurrencies(ctx context.Context) ([]model.Currency, error
 	err := r.db.NewSelect().Model(&currencies).Where("is_active = ?", true).Order("sort_order ASC").Scan(ctx)
 	return currencies, err
 }
+
+func (r *Repository) GetLookupParts(ctx context.Context) ([]model.LookupPart, error) {
+	var parts []model.LookupPart
+	err := r.db.NewSelect().Model(&parts).Where("is_active = ?", true).Order("name ASC").Scan(ctx)
+	return parts, err
+}
+
+func (r *Repository) GetStorageLocations(ctx context.Context) ([]model.StorageLocation, error) {
+	var locs []model.StorageLocation
+	err := r.db.NewSelect().Model(&locs).Where("is_active = ?", true).Order("name ASC").Scan(ctx)
+	return locs, err
+}

@@ -86,10 +86,13 @@ func varBool(vars map[string]interface{}, key string) *bool {
 	return nil
 }
 
-func toMap(v interface{}) map[string]interface{} {
+func toMap(v interface{}, typename string) map[string]interface{} {
 	data, _ := json.Marshal(v)
 	var m map[string]interface{}
 	json.Unmarshal(data, &m)
+	if typename != "" {
+		m["__typename"] = typename
+	}
 	return m
 }
 
@@ -155,6 +158,11 @@ func (r *Resolver) GraphQLHandler(w http.ResponseWriter, req *http.Request) {
 	case strings.Contains(q, "currencies"):
 		r.handleCurrencies(w, req, gqlReq)
 
+	case strings.Contains(q, "partNames"):
+		r.handlePartNames(w, req, gqlReq)
+	case strings.Contains(q, "storageLocations"):
+		r.handleStorageLocations(w, req, gqlReq)
+
 	default:
 		writeGQL(w, map[string]interface{}{"__typename": "Query"})
 	}
@@ -175,7 +183,7 @@ func (r *Resolver) handleVehicleMakes(w http.ResponseWriter, req *http.Request, 
 
 	result := make([]map[string]interface{}, len(makes))
 	for i, m := range makes {
-		result[i] = toMap(m)
+		result[i] = toMap(m, "VehicleMake")
 	}
 	writeGQL(w, map[string]interface{}{"vehicleMakes": result})
 }
@@ -189,7 +197,7 @@ func (r *Resolver) handleVehicleMake(w http.ResponseWriter, req *http.Request, g
 		writeGQLError(w, 404, "vehicle make not found")
 		return
 	}
-	writeGQL(w, map[string]interface{}{"vehicleMake": toMap(make)})
+	writeGQL(w, map[string]interface{}{"vehicleMake": toMap(make, "VehicleMake")})
 }
 
 func (r *Resolver) handleVehicleModels(w http.ResponseWriter, req *http.Request, gqlReq GraphQLRequest) {
@@ -212,7 +220,7 @@ func (r *Resolver) handleVehicleModels(w http.ResponseWriter, req *http.Request,
 
 	result := make([]map[string]interface{}, len(models))
 	for i, m := range models {
-		result[i] = toMap(m)
+		result[i] = toMap(m, "VehicleModel")
 	}
 	writeGQL(w, map[string]interface{}{"vehicleModels": result})
 }
@@ -226,7 +234,7 @@ func (r *Resolver) handleVehicleModel(w http.ResponseWriter, req *http.Request, 
 		writeGQLError(w, 404, "vehicle model not found")
 		return
 	}
-	writeGQL(w, map[string]interface{}{"vehicleModel": toMap(m)})
+	writeGQL(w, map[string]interface{}{"vehicleModel": toMap(m, "VehicleModel")})
 }
 
 func (r *Resolver) handleSearchVehicles(w http.ResponseWriter, req *http.Request, gqlReq GraphQLRequest) {
@@ -245,9 +253,9 @@ func (r *Resolver) handleSearchVehicles(w http.ResponseWriter, req *http.Request
 
 	result := make([]map[string]interface{}, len(models))
 	for i, m := range models {
-		item := toMap(m)
+		item := toMap(m, "VehicleModel")
 		if m.Make != nil {
-			item["make"] = toMap(m.Make)
+			item["make"] = toMap(m.Make, "VehicleMake")
 		}
 		result[i] = item
 	}
@@ -289,7 +297,7 @@ func (r *Resolver) handleCreateVehicleMake(w http.ResponseWriter, req *http.Requ
 		writeGQLError(w, 500, "failed to create vehicle make")
 		return
 	}
-	writeGQL(w, map[string]interface{}{"createVehicleMake": toMap(make)})
+	writeGQL(w, map[string]interface{}{"createVehicleMake": toMap(make, "VehicleMake")})
 }
 
 // ---- Service handlers ----
@@ -310,7 +318,7 @@ func (r *Resolver) handleServiceTypes(w http.ResponseWriter, req *http.Request, 
 
 	result := make([]map[string]interface{}, len(types))
 	for i, t := range types {
-		result[i] = toMap(t)
+		result[i] = toMap(t, "ServiceType")
 	}
 	writeGQL(w, map[string]interface{}{"serviceTypes": result})
 }
@@ -324,7 +332,7 @@ func (r *Resolver) handleServiceType(w http.ResponseWriter, req *http.Request, g
 		writeGQLError(w, 404, "service type not found")
 		return
 	}
-	writeGQL(w, map[string]interface{}{"serviceType": toMap(st)})
+	writeGQL(w, map[string]interface{}{"serviceType": toMap(st, "ServiceType")})
 }
 
 func (r *Resolver) handleDiagnosticCodes(w http.ResponseWriter, req *http.Request, gqlReq GraphQLRequest) {
@@ -340,7 +348,7 @@ func (r *Resolver) handleDiagnosticCodes(w http.ResponseWriter, req *http.Reques
 
 	result := make([]map[string]interface{}, len(codes))
 	for i, c := range codes {
-		result[i] = toMap(c)
+		result[i] = toMap(c, "DiagnosticCode")
 	}
 	writeGQL(w, map[string]interface{}{"diagnosticCodes": result})
 }
@@ -354,7 +362,7 @@ func (r *Resolver) handleDiagnosticCode(w http.ResponseWriter, req *http.Request
 		writeGQLError(w, 404, "diagnostic code not found")
 		return
 	}
-	writeGQL(w, map[string]interface{}{"diagnosticCode": toMap(dc)})
+	writeGQL(w, map[string]interface{}{"diagnosticCode": toMap(dc, "DiagnosticCode")})
 }
 
 func (r *Resolver) handleSearchDiagnosticCodes(w http.ResponseWriter, req *http.Request, gqlReq GraphQLRequest) {
@@ -369,7 +377,7 @@ func (r *Resolver) handleSearchDiagnosticCodes(w http.ResponseWriter, req *http.
 
 	result := make([]map[string]interface{}, len(codes))
 	for i, c := range codes {
-		result[i] = toMap(c)
+		result[i] = toMap(c, "DiagnosticCode")
 	}
 	writeGQL(w, map[string]interface{}{"searchDiagnosticCodes": result})
 }
@@ -388,7 +396,7 @@ func (r *Resolver) handlePartCategories(w http.ResponseWriter, req *http.Request
 
 	result := make([]map[string]interface{}, len(cats))
 	for i, c := range cats {
-		result[i] = toMap(c)
+		result[i] = toMap(c, "PartCategory")
 	}
 	writeGQL(w, map[string]interface{}{"partCategories": result})
 }
@@ -402,7 +410,7 @@ func (r *Resolver) handlePartCategory(w http.ResponseWriter, req *http.Request, 
 		writeGQLError(w, 404, "part category not found")
 		return
 	}
-	writeGQL(w, map[string]interface{}{"partCategory": toMap(cat)})
+	writeGQL(w, map[string]interface{}{"partCategory": toMap(cat, "PartCategory")})
 }
 
 func (r *Resolver) handlePartCompatibility(w http.ResponseWriter, req *http.Request, gqlReq GraphQLRequest) {
@@ -425,7 +433,7 @@ func (r *Resolver) handlePartCompatibility(w http.ResponseWriter, req *http.Requ
 
 	result := make([]map[string]interface{}, len(compats))
 	for i, c := range compats {
-		result[i] = toMap(c)
+		result[i] = toMap(c, "PartCompatibility")
 	}
 	writeGQL(w, map[string]interface{}{"checkPartCompatibility": result})
 }
@@ -440,7 +448,7 @@ func (r *Resolver) handleFuelTypes(w http.ResponseWriter, req *http.Request, gql
 	}
 	result := make([]map[string]interface{}, len(types))
 	for i, t := range types {
-		result[i] = toMap(t)
+		result[i] = toMap(t, "FuelType")
 	}
 	writeGQL(w, map[string]interface{}{"fuelTypes": result})
 }
@@ -453,7 +461,7 @@ func (r *Resolver) handleTransmissionTypes(w http.ResponseWriter, req *http.Requ
 	}
 	result := make([]map[string]interface{}, len(types))
 	for i, t := range types {
-		result[i] = toMap(t)
+		result[i] = toMap(t, "TransmissionType")
 	}
 	writeGQL(w, map[string]interface{}{"transmissionTypes": result})
 }
@@ -466,7 +474,7 @@ func (r *Resolver) handleEngineTypes(w http.ResponseWriter, req *http.Request, g
 	}
 	result := make([]map[string]interface{}, len(types))
 	for i, t := range types {
-		result[i] = toMap(t)
+		result[i] = toMap(t, "EngineType")
 	}
 	writeGQL(w, map[string]interface{}{"engineTypes": result})
 }
@@ -484,7 +492,7 @@ func (r *Resolver) handleLaborRateTiers(w http.ResponseWriter, req *http.Request
 
 	result := make([]map[string]interface{}, len(tiers))
 	for i, t := range tiers {
-		result[i] = toMap(t)
+		result[i] = toMap(t, "LaborRateTier")
 	}
 	writeGQL(w, map[string]interface{}{"laborRateTiers": result})
 }
@@ -498,7 +506,7 @@ func (r *Resolver) handleLaborRateTier(w http.ResponseWriter, req *http.Request,
 		writeGQLError(w, 404, "labor rate tier not found")
 		return
 	}
-	writeGQL(w, map[string]interface{}{"laborRateTier": toMap(tier)})
+	writeGQL(w, map[string]interface{}{"laborRateTier": toMap(tier, "LaborRateTier")})
 }
 
 func (r *Resolver) handleCountries(w http.ResponseWriter, req *http.Request, gqlReq GraphQLRequest) {
@@ -509,7 +517,7 @@ func (r *Resolver) handleCountries(w http.ResponseWriter, req *http.Request, gql
 	}
 	result := make([]map[string]interface{}, len(countries))
 	for i, c := range countries {
-		result[i] = toMap(c)
+		result[i] = toMap(c, "Country")
 	}
 	writeGQL(w, map[string]interface{}{"countries": result})
 }
@@ -522,7 +530,33 @@ func (r *Resolver) handleCurrencies(w http.ResponseWriter, req *http.Request, gq
 	}
 	result := make([]map[string]interface{}, len(currencies))
 	for i, c := range currencies {
-		result[i] = toMap(c)
+		result[i] = toMap(c, "Currency")
 	}
 	writeGQL(w, map[string]interface{}{"currencies": result})
+}
+
+func (r *Resolver) handlePartNames(w http.ResponseWriter, req *http.Request, gqlReq GraphQLRequest) {
+	parts, err := r.repo.GetLookupParts(req.Context())
+	if err != nil {
+		writeGQLError(w, 500, "failed to fetch part names")
+		return
+	}
+	result := make([]map[string]interface{}, len(parts))
+	for i, p := range parts {
+		result[i] = toMap(p, "LookupPart")
+	}
+	writeGQL(w, map[string]interface{}{"partNames": result})
+}
+
+func (r *Resolver) handleStorageLocations(w http.ResponseWriter, req *http.Request, gqlReq GraphQLRequest) {
+	locs, err := r.repo.GetStorageLocations(req.Context())
+	if err != nil {
+		writeGQLError(w, 500, "failed to fetch storage locations")
+		return
+	}
+	result := make([]map[string]interface{}, len(locs))
+	for i, l := range locs {
+		result[i] = toMap(l, "StorageLocation")
+	}
+	writeGQL(w, map[string]interface{}{"storageLocations": result})
 }
