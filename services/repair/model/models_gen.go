@@ -2,6 +2,13 @@
 
 package model
 
+type AddAppointmentPartInput struct {
+	AppointmentID string   `json:"appointmentId"`
+	PartID        string   `json:"partId"`
+	Quantity      int      `json:"quantity"`
+	UnitPrice     *float64 `json:"unitPrice,omitempty"`
+}
+
 type Appointment struct {
 	ID               string  `json:"id"`
 	TenantID         string  `json:"tenantId"`
@@ -31,6 +38,17 @@ func (Appointment) IsEntity() {}
 type AppointmentConnection struct {
 	Items []*Appointment `json:"items"`
 	Total int            `json:"total"`
+}
+
+type AppointmentPart struct {
+	ID            string  `json:"id"`
+	AppointmentID string  `json:"appointmentId"`
+	PartID        string  `json:"partId"`
+	PartName      string  `json:"partName"`
+	Quantity      int     `json:"quantity"`
+	UnitPrice     float64 `json:"unitPrice"`
+	CreatedAt     string  `json:"createdAt"`
+	UpdatedAt     string  `json:"updatedAt"`
 }
 
 type CreateAppointmentInput struct {

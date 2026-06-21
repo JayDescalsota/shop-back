@@ -209,6 +209,16 @@ func (r *Repository) Migrate(ctx context.Context) error {
 			status TEXT NOT NULL DEFAULT 'available',
 			created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 			updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+		);
+		CREATE TABLE IF NOT EXISTS repair.appointment_parts (
+			id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+			appointment_id UUID NOT NULL REFERENCES repair.appointments(id) ON DELETE CASCADE,
+			part_id UUID NOT NULL REFERENCES repair.shop_parts(id),
+			part_name TEXT NOT NULL,
+			quantity INTEGER NOT NULL DEFAULT 1,
+			unit_price DECIMAL(10,2) NOT NULL DEFAULT 0,
+			created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+			updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 		)
 	`)
 	return err
@@ -611,6 +621,56 @@ func (r *Repository) UpdatePartBatch(ctx context.Context, b *PartBatch) error {
 
 func (r *Repository) DeletePartBatch(ctx context.Context, id string) error {
 	_, err := r.db.NewDelete().Model(&PartBatch{}).Where("id = ?", id).Exec(ctx)
+	return err
+}
+
+type AppointmentPart struct {
+	bun.BaseModel `bun:"table:repair.appointment_parts"`
+
+	ID            string    `bun:"id,pk,type:uuid"`
+	AppointmentID string    `bun:"appointment_id,notnull,type:uuid"`
+	PartID        string    `bun:"part_id,notnull,type:uuid"`
+	PartName      string    `bun:"part_name,notnull"`
+	Quantity      int       `bun:"quantity,notnull"`
+	UnitPrice     float64   `bun:"unit_price,notnull"`
+	CreatedAt     time.Time `bun:"created_at,notnull"`
+	UpdatedAt     time.Time `bun:"updated_at,notnull"`
+}
+
+func (r *Repository) CreateAppointmentPart(ctx context.Context, ap *AppointmentPart) error {
+	if ap.ID == "" {
+		ap.ID = uuid.New().String()
+	}
+	now := time.Now()
+	ap.CreatedAt = now
+	ap.UpdatedAt = now
+	_, err := r.db.NewInsert().Model(ap).Exec(ctx)
+	return err
+}
+
+func (r *Repository) ListAppointmentParts(ctx context.Context, appointmentID string) ([]AppointmentPart, error) {
+	var items []AppointmentPart
+	err := r.db.NewSelect().Model(&items).
+		Where("appointment_id = ?", appointmentID).
+		Order("created_at ASC").
+		Scan(ctx)
+	return items, err
+}
+
+func (r *Repository) GetAppointmentPart(ctx context.Context, id string) (*AppointmentPart, error) {
+	ap := &AppointmentPart{}
+	err := r.db.NewSelect().Model(ap).Where("id = ?", id).Scan(ctx)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("get appointment part: %w", err)
+	}
+	return ap, nil
+}
+
+func (r *Repository) DeleteAppointmentPart(ctx context.Context, id string) error {
+	_, err := r.db.NewDelete().Model(&AppointmentPart{}).Where("id = ?", id).Exec(ctx)
 	return err
 }
 

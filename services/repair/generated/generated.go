@@ -67,6 +67,17 @@ type ComplexityRoot struct {
 		Total func(childComplexity int) int
 	}
 
+	AppointmentPart struct {
+		AppointmentID func(childComplexity int) int
+		CreatedAt     func(childComplexity int) int
+		ID            func(childComplexity int) int
+		PartID        func(childComplexity int) int
+		PartName      func(childComplexity int) int
+		Quantity      func(childComplexity int) int
+		UnitPrice     func(childComplexity int) int
+		UpdatedAt     func(childComplexity int) int
+	}
+
 	Customer struct {
 		Address       func(childComplexity int) int
 		City          func(childComplexity int) int
@@ -103,6 +114,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		AddAppointmentPart      func(childComplexity int, input model.AddAppointmentPartInput) int
 		AddPartBatch            func(childComplexity int, input model.CreatePartBatchInput) int
 		CompleteStaffAssignment func(childComplexity int, id string, totalMinutes int) int
 		CreateAppointment       func(childComplexity int, input model.CreateAppointmentInput) int
@@ -113,6 +125,7 @@ type ComplexityRoot struct {
 		CreateStaffAssignment   func(childComplexity int, input model.CreateStaffAssignmentInput) int
 		CreateVehicle           func(childComplexity int, input model.CreateVehicleInput) int
 		DeleteAppointment       func(childComplexity int, id string) int
+		DeleteAppointmentPart   func(childComplexity int, id string) int
 		DeleteCustomer          func(childComplexity int, id string) int
 		DeletePartBatch         func(childComplexity int, id string) int
 		DeleteShopPart          func(childComplexity int, id string) int
@@ -143,6 +156,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		Appointment            func(childComplexity int, id string) int
+		AppointmentParts       func(childComplexity int, appointmentID string) int
 		Appointments           func(childComplexity int, tenantID *string) int
 		Customer               func(childComplexity int, id string) int
 		Customers              func(childComplexity int, tenantID *string) int
@@ -298,6 +312,8 @@ type MutationResolver interface {
 	CreateShopTool(ctx context.Context, input model.CreateShopToolInput) (*model.ShopTool, error)
 	UpdateShopTool(ctx context.Context, id string, input model.UpdateShopToolInput) (*model.ShopTool, error)
 	DeleteShopTool(ctx context.Context, id string) (bool, error)
+	AddAppointmentPart(ctx context.Context, input model.AddAppointmentPartInput) (*model.AppointmentPart, error)
+	DeleteAppointmentPart(ctx context.Context, id string) (bool, error)
 }
 type QueryResolver interface {
 	Appointment(ctx context.Context, id string) (*model.Appointment, error)
@@ -311,6 +327,7 @@ type QueryResolver interface {
 	ShopServices(ctx context.Context, tenantID *string) (*model.ShopServiceConnection, error)
 	ShopParts(ctx context.Context, tenantID *string) (*model.ShopPartConnection, error)
 	ShopTools(ctx context.Context, tenantID *string) (*model.ShopToolConnection, error)
+	AppointmentParts(ctx context.Context, appointmentID string) ([]*model.AppointmentPart, error)
 }
 
 type executableSchema graphql.ExecutableSchemaState[ResolverRoot, DirectiveRoot, ComplexityRoot]
@@ -466,6 +483,55 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.AppointmentConnection.Total(childComplexity), true
+
+	case "AppointmentPart.appointmentId":
+		if e.ComplexityRoot.AppointmentPart.AppointmentID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AppointmentPart.AppointmentID(childComplexity), true
+	case "AppointmentPart.createdAt":
+		if e.ComplexityRoot.AppointmentPart.CreatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AppointmentPart.CreatedAt(childComplexity), true
+	case "AppointmentPart.id":
+		if e.ComplexityRoot.AppointmentPart.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AppointmentPart.ID(childComplexity), true
+	case "AppointmentPart.partId":
+		if e.ComplexityRoot.AppointmentPart.PartID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AppointmentPart.PartID(childComplexity), true
+	case "AppointmentPart.partName":
+		if e.ComplexityRoot.AppointmentPart.PartName == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AppointmentPart.PartName(childComplexity), true
+	case "AppointmentPart.quantity":
+		if e.ComplexityRoot.AppointmentPart.Quantity == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AppointmentPart.Quantity(childComplexity), true
+	case "AppointmentPart.unitPrice":
+		if e.ComplexityRoot.AppointmentPart.UnitPrice == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AppointmentPart.UnitPrice(childComplexity), true
+	case "AppointmentPart.updatedAt":
+		if e.ComplexityRoot.AppointmentPart.UpdatedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.AppointmentPart.UpdatedAt(childComplexity), true
 
 	case "Customer.address":
 		if e.ComplexityRoot.Customer.Address == nil {
@@ -661,6 +727,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.Entity.FindVehicleByID(childComplexity, args["id"].(string)), true
 
+	case "Mutation.addAppointmentPart":
+		if e.ComplexityRoot.Mutation.AddAppointmentPart == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_addAppointmentPart_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.AddAppointmentPart(childComplexity, args["input"].(model.AddAppointmentPartInput)), true
 	case "Mutation.addPartBatch":
 		if e.ComplexityRoot.Mutation.AddPartBatch == nil {
 			break
@@ -771,6 +848,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Mutation.DeleteAppointment(childComplexity, args["id"].(string)), true
+	case "Mutation.deleteAppointmentPart":
+		if e.ComplexityRoot.Mutation.DeleteAppointmentPart == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteAppointmentPart_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Mutation.DeleteAppointmentPart(childComplexity, args["id"].(string)), true
 	case "Mutation.deleteCustomer":
 		if e.ComplexityRoot.Mutation.DeleteCustomer == nil {
 			break
@@ -1007,6 +1095,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.Appointment(childComplexity, args["id"].(string)), true
+	case "Query.appointmentParts":
+		if e.ComplexityRoot.Query.AppointmentParts == nil {
+			break
+		}
+
+		args, err := ec.field_Query_appointmentParts_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.AppointmentParts(childComplexity, args["appointmentId"].(string)), true
 	case "Query.appointments":
 		if e.ComplexityRoot.Query.Appointments == nil {
 			break
@@ -1575,6 +1674,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	opCtx := graphql.GetOperationContext(ctx)
 	ec := newExecutionContext(opCtx, e, make(chan graphql.DeferredResult))
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputAddAppointmentPartInput,
 		ec.unmarshalInputCreateAppointmentInput,
 		ec.unmarshalInputCreateCustomerInput,
 		ec.unmarshalInputCreatePartBatchInput,
@@ -1900,6 +2000,7 @@ extend type Query {
     shopServices(tenantId: ID): ShopServiceConnection!
     shopParts(tenantId: ID): ShopPartConnection!
     shopTools(tenantId: ID): ShopToolConnection!
+    appointmentParts(appointmentId: ID!): [AppointmentPart!]!
 }
 
 extend type Mutation {
@@ -1920,6 +2021,8 @@ extend type Mutation {
     createShopTool(input: CreateShopToolInput!): ShopTool!
     updateShopTool(id: ID!, input: UpdateShopToolInput!): ShopTool!
     deleteShopTool(id: ID!): Boolean!
+    addAppointmentPart(input: AddAppointmentPartInput!): AppointmentPart!
+    deleteAppointmentPart(id: ID!): Boolean!
 }
 
 type ShopService @key(fields: "id") {
@@ -2047,6 +2150,24 @@ input UpdateShopToolInput {
     description: String
     quantity: Int
     status: String
+}
+
+type AppointmentPart {
+    id: ID!
+    appointmentId: ID!
+    partId: ID!
+    partName: String!
+    quantity: Int!
+    unitPrice: Float!
+    createdAt: String!
+    updatedAt: String!
+}
+
+input AddAppointmentPartInput {
+    appointmentId: ID!
+    partId: ID!
+    quantity: Int!
+    unitPrice: Float
 }
 `, BuiltIn: false},
 	{Name: "../federation/directives.graphql", Input: `
@@ -2187,6 +2308,28 @@ func (ec *executionContext) childFields_AppointmentConnection(ctx context.Contex
 		return ec.fieldContext_AppointmentConnection_total(ctx, field)
 	}
 	return nil, fmt.Errorf("no field named %q was found under type AppointmentConnection", field.Name)
+}
+
+func (ec *executionContext) childFields_AppointmentPart(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_AppointmentPart_id(ctx, field)
+	case "appointmentId":
+		return ec.fieldContext_AppointmentPart_appointmentId(ctx, field)
+	case "partId":
+		return ec.fieldContext_AppointmentPart_partId(ctx, field)
+	case "partName":
+		return ec.fieldContext_AppointmentPart_partName(ctx, field)
+	case "quantity":
+		return ec.fieldContext_AppointmentPart_quantity(ctx, field)
+	case "unitPrice":
+		return ec.fieldContext_AppointmentPart_unitPrice(ctx, field)
+	case "createdAt":
+		return ec.fieldContext_AppointmentPart_createdAt(ctx, field)
+	case "updatedAt":
+		return ec.fieldContext_AppointmentPart_updatedAt(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type AppointmentPart", field.Name)
 }
 
 func (ec *executionContext) childFields_Customer(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
@@ -2667,6 +2810,20 @@ func (ec *executionContext) field_Entity_findVehicleByID_args(ctx context.Contex
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_addAppointmentPart_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (model.AddAppointmentPartInput, error) {
+			return ec.unmarshalNAddAppointmentPartInput2backendᚋservicesᚋrepairᚋmodelᚐAddAppointmentPartInput(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_addPartBatch_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -2798,6 +2955,20 @@ func (ec *executionContext) field_Mutation_createVehicle_args(ctx context.Contex
 		return nil, err
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteAppointmentPart_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -3150,6 +3321,20 @@ func (ec *executionContext) field_Query__entities_args(ctx context.Context, rawA
 		return nil, err
 	}
 	args["representations"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_appointmentParts_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "appointmentId",
+		func(ctx context.Context, v any) (string, error) {
+			return ec.unmarshalNID2string(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["appointmentId"] = arg0
 	return args, nil
 }
 
@@ -3907,6 +4092,190 @@ func (ec *executionContext) _AppointmentConnection_total(ctx context.Context, fi
 }
 func (ec *executionContext) fieldContext_AppointmentConnection_total(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("AppointmentConnection", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _AppointmentPart_id(ctx context.Context, field graphql.CollectedField, obj *model.AppointmentPart) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_AppointmentPart_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_AppointmentPart_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("AppointmentPart", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _AppointmentPart_appointmentId(ctx context.Context, field graphql.CollectedField, obj *model.AppointmentPart) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_AppointmentPart_appointmentId(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.AppointmentID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_AppointmentPart_appointmentId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("AppointmentPart", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _AppointmentPart_partId(ctx context.Context, field graphql.CollectedField, obj *model.AppointmentPart) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_AppointmentPart_partId(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.PartID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_AppointmentPart_partId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("AppointmentPart", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _AppointmentPart_partName(ctx context.Context, field graphql.CollectedField, obj *model.AppointmentPart) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_AppointmentPart_partName(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.PartName, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_AppointmentPart_partName(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("AppointmentPart", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _AppointmentPart_quantity(ctx context.Context, field graphql.CollectedField, obj *model.AppointmentPart) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_AppointmentPart_quantity(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Quantity, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v int) graphql.Marshaler {
+			return ec.marshalNInt2int(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_AppointmentPart_quantity(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("AppointmentPart", field, false, false, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _AppointmentPart_unitPrice(ctx context.Context, field graphql.CollectedField, obj *model.AppointmentPart) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_AppointmentPart_unitPrice(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.UnitPrice, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v float64) graphql.Marshaler {
+			return ec.marshalNFloat2float64(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_AppointmentPart_unitPrice(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("AppointmentPart", field, false, false, errors.New("field of type Float does not have child fields"))
+}
+
+func (ec *executionContext) _AppointmentPart_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.AppointmentPart) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_AppointmentPart_createdAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.CreatedAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_AppointmentPart_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("AppointmentPart", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _AppointmentPart_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.AppointmentPart) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_AppointmentPart_updatedAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.UpdatedAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_AppointmentPart_updatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("AppointmentPart", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
 func (ec *executionContext) _Customer_id(ctx context.Context, field graphql.CollectedField, obj *model.Customer) (ret graphql.Marshaler) {
@@ -5851,6 +6220,94 @@ func (ec *executionContext) fieldContext_Mutation_deleteShopTool(ctx context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_addAppointmentPart(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_addAppointmentPart(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().AddAppointmentPart(ctx, fc.Args["input"].(model.AddAppointmentPartInput))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *model.AppointmentPart) graphql.Marshaler {
+			return ec.marshalNAppointmentPart2ᚖbackendᚋservicesᚋrepairᚋmodelᚐAppointmentPart(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_addAppointmentPart(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_AppointmentPart(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_addAppointmentPart_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_deleteAppointmentPart(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Mutation_deleteAppointmentPart(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Mutation().DeleteAppointmentPart(ctx, fc.Args["id"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v bool) graphql.Marshaler {
+			return ec.marshalNBoolean2bool(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Mutation_deleteAppointmentPart(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deleteAppointmentPart_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _PartBatch_id(ctx context.Context, field graphql.CollectedField, obj *model.PartBatch) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -6467,6 +6924,50 @@ func (ec *executionContext) fieldContext_Query_shopTools(ctx context.Context, fi
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_shopTools_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_appointmentParts(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_appointmentParts(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().AppointmentParts(ctx, fc.Args["appointmentId"].(string))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.AppointmentPart) graphql.Marshaler {
+			return ec.marshalNAppointmentPart2ᚕᚖbackendᚋservicesᚋrepairᚋmodelᚐAppointmentPartᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_appointmentParts(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_AppointmentPart(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_appointmentParts_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -9348,6 +9849,57 @@ func (ec *executionContext) fieldContext___Type_isOneOf(_ context.Context, field
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputAddAppointmentPartInput(ctx context.Context, obj any) (model.AddAppointmentPartInput, error) {
+	var it model.AddAppointmentPartInput
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"appointmentId", "partId", "quantity", "unitPrice"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "appointmentId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("appointmentId"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AppointmentID = data
+		case "partId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("partId"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PartID = data
+		case "quantity":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("quantity"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Quantity = data
+		case "unitPrice":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("unitPrice"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UnitPrice = data
+		}
+	}
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCreateAppointmentInput(ctx context.Context, obj any) (model.CreateAppointmentInput, error) {
 	var it model.CreateAppointmentInput
 	if obj == nil {
@@ -10745,6 +11297,80 @@ func (ec *executionContext) _AppointmentConnection(ctx context.Context, sel ast.
 	return out
 }
 
+var appointmentPartImplementors = []string{"AppointmentPart"}
+
+func (ec *executionContext) _AppointmentPart(ctx context.Context, sel ast.SelectionSet, obj *model.AppointmentPart) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, appointmentPartImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AppointmentPart")
+		case "id":
+			out.Values[i] = ec._AppointmentPart_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "appointmentId":
+			out.Values[i] = ec._AppointmentPart_appointmentId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "partId":
+			out.Values[i] = ec._AppointmentPart_partId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "partName":
+			out.Values[i] = ec._AppointmentPart_partName(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "quantity":
+			out.Values[i] = ec._AppointmentPart_quantity(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "unitPrice":
+			out.Values[i] = ec._AppointmentPart_unitPrice(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "createdAt":
+			out.Values[i] = ec._AppointmentPart_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updatedAt":
+			out.Values[i] = ec._AppointmentPart_updatedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferred), math.MaxInt32)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var customerImplementors = []string{"Customer", "_Entity"}
 
 func (ec *executionContext) _Customer(ctx context.Context, sel ast.SelectionSet, obj *model.Customer) graphql.Marshaler {
@@ -11288,6 +11914,20 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "addAppointmentPart":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_addAppointmentPart(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "deleteAppointmentPart":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deleteAppointmentPart(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -11615,6 +12255,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_shopTools(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "appointmentParts":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_appointmentParts(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -12692,6 +13354,11 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
+func (ec *executionContext) unmarshalNAddAppointmentPartInput2backendᚋservicesᚋrepairᚋmodelᚐAddAppointmentPartInput(ctx context.Context, v any) (model.AddAppointmentPartInput, error) {
+	res, err := ec.unmarshalInputAddAppointmentPartInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalNAppointment2backendᚋservicesᚋrepairᚋmodelᚐAppointment(ctx context.Context, sel ast.SelectionSet, v model.Appointment) graphql.Marshaler {
 	return ec._Appointment(ctx, sel, &v)
 }
@@ -12734,6 +13401,36 @@ func (ec *executionContext) marshalNAppointmentConnection2ᚖbackendᚋservices�
 		return graphql.Null
 	}
 	return ec._AppointmentConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNAppointmentPart2backendᚋservicesᚋrepairᚋmodelᚐAppointmentPart(ctx context.Context, sel ast.SelectionSet, v model.AppointmentPart) graphql.Marshaler {
+	return ec._AppointmentPart(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAppointmentPart2ᚕᚖbackendᚋservicesᚋrepairᚋmodelᚐAppointmentPartᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.AppointmentPart) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNAppointmentPart2ᚖbackendᚋservicesᚋrepairᚋmodelᚐAppointmentPart(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNAppointmentPart2ᚖbackendᚋservicesᚋrepairᚋmodelᚐAppointmentPart(ctx context.Context, sel ast.SelectionSet, v *model.AppointmentPart) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._AppointmentPart(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v any) (bool, error) {

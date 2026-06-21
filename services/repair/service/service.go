@@ -991,6 +991,120 @@ func (s *Service) DeleteShopTool(ctx context.Context, id string) (bool, error) {
 	return true, nil
 }
 
+func (s *Service) AddAppointmentPart(ctx context.Context, input model.AddAppointmentPartInput) (*model.AppointmentPart, error) {
+	if input.Quantity <= 0 {
+		return nil, fmt.Errorf("quantity must be positive")
+	}
+
+	part, err := s.repo.GetShopPart(ctx, input.PartID)
+	if err != nil {
+		return nil, fmt.Errorf("get part: %w", err)
+	}
+
+	batches, err := s.repo.ListPartBatches(ctx, input.PartID)
+	if err != nil {
+		return nil, fmt.Errorf("list batches: %w", err)
+	}
+
+	needed := input.Quantity
+	totalAvailable := 0
+	for _, b := range batches {
+		totalAvailable += b.Quantity
+	}
+	if totalAvailable < needed {
+		return nil, fmt.Errorf("insufficient stock: have %d, need %d", totalAvailable, needed)
+	}
+
+	for i := range batches {
+		if needed <= 0 {
+			break
+		}
+		if batches[i].Quantity >= needed {
+			batches[i].Quantity -= needed
+			needed = 0
+		} else {
+			needed -= batches[i].Quantity
+			batches[i].Quantity = 0
+		}
+		if err := s.repo.UpdatePartBatch(ctx, &batches[i]); err != nil {
+			return nil, fmt.Errorf("update batch %s: %w", batches[i].ID, err)
+		}
+	}
+
+	part.Quantity -= input.Quantity
+	if err := s.repo.UpdateShopPart(ctx, part); err != nil {
+		return nil, fmt.Errorf("update part quantity: %w", err)
+	}
+
+	var unitPrice float64
+	if len(batches) > 0 && batches[0].UnitCost > 0 {
+		unitPrice = batches[0].UnitCost
+	}
+	if input.UnitPrice != nil {
+		unitPrice = *input.UnitPrice
+	}
+
+	repo := &repository.AppointmentPart{
+		AppointmentID: input.AppointmentID,
+		PartID:        input.PartID,
+		PartName:      part.Name,
+		Quantity:      input.Quantity,
+		UnitPrice:     unitPrice,
+	}
+	if err := s.repo.CreateAppointmentPart(ctx, repo); err != nil {
+		return nil, fmt.Errorf("create appointment part: %w", err)
+	}
+	return appointmentPartToModel(repo), nil
+}
+
+func (s *Service) ListAppointmentParts(ctx context.Context, appointmentID string) ([]*model.AppointmentPart, error) {
+	items, err := s.repo.ListAppointmentParts(ctx, appointmentID)
+	if err != nil {
+		return nil, fmt.Errorf("list appointment parts: %w", err)
+	}
+	result := make([]*model.AppointmentPart, len(items))
+	for i := range items {
+		result[i] = appointmentPartToModel(&items[i])
+	}
+	return result, nil
+}
+
+func (s *Service) DeleteAppointmentPart(ctx context.Context, id string) (bool, error) {
+	ap, err := s.repo.GetAppointmentPart(ctx, id)
+	if err != nil {
+		return false, err
+	}
+
+	part, err := s.repo.GetShopPart(ctx, ap.PartID)
+	if err != nil {
+		return false, fmt.Errorf("get part: %w", err)
+	}
+
+	if err := s.repo.DeleteAppointmentPart(ctx, id); err != nil {
+		return false, fmt.Errorf("delete appointment part: %w", err)
+	}
+
+	part.Quantity += ap.Quantity
+	if err := s.repo.UpdateShopPart(ctx, part); err != nil {
+		return false, fmt.Errorf("restore part quantity: %w", err)
+	}
+
+	return true, nil
+}
+
+func appointmentPartToModel(r *repository.AppointmentPart) *model.AppointmentPart {
+	return &model.AppointmentPart{
+		ID:            r.ID,
+		AppointmentID: r.AppointmentID,
+		PartID:        r.PartID,
+		PartName:      r.PartName,
+		Quantity:      r.Quantity,
+		UnitPrice:     r.UnitPrice,
+		CreatedAt:     r.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:     r.UpdatedAt.Format(time.RFC3339),
+	}
+}
+
 func shopServiceToModel(r *repository.ShopService) *model.ShopService {
 	return &model.ShopService{
 		ID:             r.ID,

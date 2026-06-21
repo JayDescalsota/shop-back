@@ -147,6 +147,16 @@ func (r *mutationResolver) DeleteShopTool(ctx context.Context, id string) (bool,
 	return r.svc.DeleteShopTool(ctx, id)
 }
 
+// AddAppointmentPart is the resolver for the addAppointmentPart field.
+func (r *mutationResolver) AddAppointmentPart(ctx context.Context, input model.AddAppointmentPartInput) (*model.AppointmentPart, error) {
+	return r.svc.AddAppointmentPart(ctx, input)
+}
+
+// DeleteAppointmentPart is the resolver for the deleteAppointmentPart field.
+func (r *mutationResolver) DeleteAppointmentPart(ctx context.Context, id string) (bool, error) {
+	return r.svc.DeleteAppointmentPart(ctx, id)
+}
+
 // Appointment is the resolver for the appointment field.
 func (r *queryResolver) Appointment(ctx context.Context, id string) (*model.Appointment, error) {
 	return r.svc.GetAppointment(ctx, id)
@@ -224,6 +234,11 @@ func (r *queryResolver) ShopTools(ctx context.Context, tenantID *string) (*model
 		tid = *tenantID
 	}
 	return r.svc.ListShopTools(ctx, tid)
+}
+
+// AppointmentParts is the resolver for the appointmentParts field.
+func (r *queryResolver) AppointmentParts(ctx context.Context, appointmentID string) ([]*model.AppointmentPart, error) {
+	return r.svc.ListAppointmentParts(ctx, appointmentID)
 }
 
 // Mutation returns generated.MutationResolver implementation.

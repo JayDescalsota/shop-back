@@ -233,6 +233,7 @@ extend type Query {
     shopServices(tenantId: ID): ShopServiceConnection!
     shopParts(tenantId: ID): ShopPartConnection!
     shopTools(tenantId: ID): ShopToolConnection!
+    appointmentParts(appointmentId: ID!): [AppointmentPart!]!
 }
 
 extend type Mutation {
@@ -253,6 +254,8 @@ extend type Mutation {
     createShopTool(input: CreateShopToolInput!): ShopTool!
     updateShopTool(id: ID!, input: UpdateShopToolInput!): ShopTool!
     deleteShopTool(id: ID!): Boolean!
+    addAppointmentPart(input: AddAppointmentPartInput!): AppointmentPart!
+    deleteAppointmentPart(id: ID!): Boolean!
 }
 
 type ShopService @key(fields: "id") {
@@ -380,4 +383,22 @@ input UpdateShopToolInput {
     description: String
     quantity: Int
     status: String
+}
+
+type AppointmentPart {
+    id: ID!
+    appointmentId: ID!
+    partId: ID!
+    partName: String!
+    quantity: Int!
+    unitPrice: Float!
+    createdAt: String!
+    updatedAt: String!
+}
+
+input AddAppointmentPartInput {
+    appointmentId: ID!
+    partId: ID!
+    quantity: Int!
+    unitPrice: Float
 }
