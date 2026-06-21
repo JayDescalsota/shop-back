@@ -1,0 +1,294 @@
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:16
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1
+      POSTGRES_DB: autolab
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./deployments/migrations/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"] 
+      
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    container_name: redis
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  nats:
+    container_name: nats
+    image: nats:2.10-alpine
+    restart: unless-stopped
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    command: ["-js", "-sd", "/data", "-m", "8222"]
+    volumes:
+      - nats_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://localhost:8222/healthz >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  minio:
+    container_name: minio
+    image: minio/minio:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+
+  gateway:
+    container_name: gateway
+    image: ghcr.io/${REPO_OWNER?REPO_OWNER not set}/gateway-service:${IMAGE_TAG:-latest}
+    ports:
+      - "4000:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_PORT: "8080"
+      SERVICE_NAME: gateway
+      DB_HOST: postgres
+      REDIS_HOST: redis
+
+  auth:
+    container_name: auth
+    image: ghcr.io/${REPO_OWNER?REPO_OWNER not set}/auth-service:${IMAGE_TAG:-latest}
+    ports:
+      - "8081:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_PORT: "8080"
+      SERVICE_NAME: auth
+      DB_HOST: postgres
+      REDIS_HOST: redis
+      NATS_URL: nats://nats:4222
+
+  users:
+    container_name: users
+    image: ghcr.io/${REPO_OWNER?REPO_OWNER not set}/users-service:${IMAGE_TAG:-latest}
+    ports:
+      - "8082:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_PORT: "8080"
+      SERVICE_NAME: users
+      DB_HOST: postgres
+      REDIS_HOST: redis
+
+  vehicles:
+    container_name: vehicles
+    image: ghcr.io/${REPO_OWNER?REPO_OWNER not set}/vehicles-service:${IMAGE_TAG:-latest}
+    ports:
+      - "8083:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_PORT: "8080"
+      SERVICE_NAME: vehicles
+      DB_HOST: postgres
+      REDIS_HOST: redis
+
+  bookings:
+    container_name: bookings
+    image: ghcr.io/${REPO_OWNER?REPO_OWNER not set}/bookings-service:${IMAGE_TAG:-latest}
+    ports:
+      - "8084:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_PORT: "8080"
+      SERVICE_NAME: bookings
+      DB_HOST: postgres
+      REDIS_HOST: redis
+
+  repair:
+    container_name: repair
+    image: ghcr.io/${REPO_OWNER?REPO_OWNER not set}/repair-service:${IMAGE_TAG:-latest}
+    ports:
+      - "8085:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_PORT: "8080"
+      SERVICE_NAME: repair
+      DB_HOST: postgres
+      REDIS_HOST: redis
+
+  inventory:
+    container_name: inventory
+    image: ghcr.io/${REPO_OWNER?REPO_OWNER not set}/inventory-service:${IMAGE_TAG:-latest}
+    ports:
+      - "8086:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_PORT: "8080"
+      SERVICE_NAME: inventory
+      DB_HOST: postgres
+      REDIS_HOST: redis
+
+  parts-marketplace:
+    container_name: parts-marketplace
+    image: ghcr.io/${REPO_OWNER?REPO_OWNER not set}/parts-marketplace-service:${IMAGE_TAG:-latest}
+    ports:
+      - "8087:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_PORT: "8080"
+      SERVICE_NAME: parts-marketplace
+      DB_HOST: postgres
+      REDIS_HOST: redis
+
+  payments:
+    container_name: payments
+    image: ghcr.io/${REPO_OWNER?REPO_OWNER not set}/payments-service:${IMAGE_TAG:-latest}
+    ports:
+      - "8088:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_PORT: "8080"
+      SERVICE_NAME: payments
+      DB_HOST: postgres
+      REDIS_HOST: redis
+
+  payroll:
+    container_name: payroll
+    image: ghcr.io/${REPO_OWNER?REPO_OWNER not set}/payroll-service:${IMAGE_TAG:-latest}
+    ports:
+      - "8089:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_PORT: "8080"
+      SERVICE_NAME: payroll
+      DB_HOST: postgres
+      REDIS_HOST: redis
+
+  staff:
+    container_name: staff
+    image: ghcr.io/${REPO_OWNER?REPO_OWNER not set}/staff-service:${IMAGE_TAG:-latest}
+    ports:
+      - "8092:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_PORT: "8080"
+      SERVICE_NAME: staff
+      DB_HOST: postgres
+      REDIS_HOST: redis
+
+  notifications:
+    container_name: notifications
+    image: ghcr.io/${REPO_OWNER?REPO_OWNER not set}/notifications-service:${IMAGE_TAG:-latest}
+    ports:
+      - "8090:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_PORT: "8080"
+      SERVICE_NAME: notifications
+      DB_HOST: postgres
+      REDIS_HOST: redis
+      NATS_URL: nats://nats:4222
+
+  lookup:
+    container_name: lookup
+    image: ghcr.io/${REPO_OWNER?REPO_OWNER not set}/lookup-service:${IMAGE_TAG:-latest}
+    ports:
+      - "8093:8090"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_PORT: "8090"
+      SERVICE_NAME: lookup
+      DB_HOST: postgres
+      REDIS_HOST: redis
+
+  search:
+    container_name: search
+    image: ghcr.io/${REPO_OWNER?REPO_OWNER not set}/search-service:${IMAGE_TAG:-latest}
+    ports:
+      - "8091:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      APP_PORT: "8080"
+      SERVICE_NAME: search
+      DB_HOST: postgres
+      REDIS_HOST: redis
+
+volumes:
+  postgres_data:
+  redis_data:
+  nats_data:
+  minio_data:
