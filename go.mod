@@ -7,6 +7,7 @@ require (
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/go-chi/cors v1.2.1
 	github.com/golang-jwt/jwt/v5 v5.2.2
+	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/nats-io/nats.go v1.41.0
@@ -16,7 +17,7 @@ require (
 	github.com/uptrace/bun/driver/pgdriver v1.2.18
 	github.com/vektah/gqlparser/v2 v2.5.33
 	golang.org/x/crypto v0.51.0
-	golang.org/x/time v0.11.0
+	golang.org/x/time v0.12.0
 )
 
 require (
@@ -29,6 +30,7 @@ require (
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
+	github.com/lib/pq v1.10.9 // indirect
 	github.com/nats-io/nkeys v0.4.9 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/puzpuzpuz/xsync/v3 v3.5.1 // indirect

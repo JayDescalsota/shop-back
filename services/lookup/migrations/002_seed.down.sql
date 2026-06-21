@@ -1,0 +1,13 @@
+DELETE FROM lookup.storage_locations;
+DELETE FROM lookup.parts;
+DELETE FROM lookup.countries;
+DELETE FROM lookup.currencies;
+DELETE FROM lookup.labor_rate_tiers;
+DELETE FROM lookup.engine_types;
+DELETE FROM lookup.transmission_types;
+DELETE FROM lookup.fuel_types;
+DELETE FROM lookup.part_categories;
+DELETE FROM lookup.diagnostic_codes;
+DELETE FROM lookup.service_types;
+DELETE FROM lookup.vehicle_models;
+DELETE FROM lookup.vehicle_makes;

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"embed"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -19,6 +20,9 @@ import (
 	"github.com/uptrace/bun"
 )
 
+//go:embed migrations/*.sql
+var migrationsFS embed.FS
+
 func main() {
 	cfg, err := config.Load()
 	if err != nil {
@@ -26,6 +30,11 @@ func main() {
 	}
 
 	db := database.NewPostgres(cfg.DSN())
+
+	if err := database.RunMigrations(db, migrationsFS, "migrations"); err != nil {
+		log.Fatalf("failed to run migrations: %v", err)
+	}
+
 	repo := repository.New(db)
 	resv := resolver.New(repo)
 

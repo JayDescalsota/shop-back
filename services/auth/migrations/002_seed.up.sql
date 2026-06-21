@@ -1,0 +1,16 @@
+INSERT INTO auth.apps (id, name, slug) VALUES
+    ('00000000-0000-0000-0000-202605270001', 'Store', 'store'),
+    ('00000000-0000-0000-0000-202605270002', 'Repair', 'repair'),
+    ('00000000-0000-0000-0000-202605270003', 'Mobile', 'mobile'),
+    ('00000000-0000-0000-0000-202605270004', 'Admin', 'admin'),
+    ('00000000-0000-0000-0000-202605270005', 'Automobile', 'automobile')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO auth.tenants (id, name, address, app_id) VALUES
+    ('00000000-0000-0000-0001-202605270001', 'Downtown Auto Parts', '100 Main St, Downtown', '00000000-0000-0000-0000-202605270001'),
+    ('00000000-0000-0000-0001-202605270002', 'Westside Auto Parts', '456 Oak Ave, Westside', '00000000-0000-0000-0000-202605270001'),
+    ('00000000-0000-0000-0001-202605270003', 'Main Street Auto Care', '123 Main St, Downtown', '00000000-0000-0000-0000-202605270002'),
+    ('00000000-0000-0000-0001-202605270004', 'Oak Avenue Auto Repair', '789 Pine Rd, Easton', '00000000-0000-0000-0000-202605270002'),
+    ('00000000-0000-0000-0001-202605270005', 'Fleet Operations Center', '500 Fleet St, Metro', '00000000-0000-0000-0000-202605270005'),
+    ('00000000-0000-0000-0001-202605270006', 'Mobile Service 1', '200 Mobile Ave, Midtown', '00000000-0000-0000-0000-202605270003')
+ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, address = EXCLUDED.address, app_id = EXCLUDED.app_id;

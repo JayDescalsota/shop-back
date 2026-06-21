@@ -17,10 +17,6 @@ func New(repo *repository.Repository) *Service {
 	return &Service{repo: repo}
 }
 
-func (s *Service) Migrate(ctx context.Context) error {
-	return s.repo.Migrate(ctx)
-}
-
 func (s *Service) CreateStaff(ctx context.Context, input model.CreateStaffInput) (*model.Staff, error) {
 	if input.TenantID == "" {
 		return nil, errors.New("tenantId is required")

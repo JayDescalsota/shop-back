@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"embed"
 	"log"
 	"net/http"
 
@@ -19,6 +20,9 @@ import (
 	"github.com/go-chi/cors"
 )
 
+//go:embed migrations/*.sql
+var migrationsFS embed.FS
+
 func main() {
 	cfg, err := loadConfig()
 	if err != nil {
@@ -27,7 +31,7 @@ func main() {
 
 	db := database.NewPostgres(cfg.DSN())
 
-	if err := ensureSchema(context.Background(), db); err != nil {
+	if err := database.RunMigrations(db, migrationsFS, "migrations"); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}
 
