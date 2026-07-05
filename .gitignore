@@ -5,3 +5,6 @@ coverage.html
 *.log
 .tmp/
 vendor/
+*.out
+.cache/
+.pre-commit/

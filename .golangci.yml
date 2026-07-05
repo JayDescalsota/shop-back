@@ -1,0 +1,33 @@
+run:
+  timeout: 5m
+  modules-download-mode: readonly
+
+linters:
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    - gofmt
+    - goimports
+    - misspell
+    - unconvert
+    - exportloopref
+  disable-all: false
+
+issues:
+  exclude-generated: "annotate"
+  exclude-files:
+    - ".*\\.pb\\.go$"
+    - ".*_gen\\.go$"
+    - ".*generated\\.go$"
+  exclude-dirs:
+    - build
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+severity:
+  default: error
