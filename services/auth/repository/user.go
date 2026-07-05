@@ -17,14 +17,21 @@ var (
 )
 
 type User struct {
-	bun.BaseModel `bun:"auth.users"`
-	ID            string    `bun:",pk"`
-	Email         string    `bun:",notnull,unique"`
-	Password      string    `bun:",notnull"`
-	Name          *string
-	Role          string    `bun:",notnull,default:'user'"`
-	CreatedAt     time.Time `bun:",nullzero,notnull,default:current_timestamp"`
-	UpdatedAt     time.Time `bun:",nullzero,notnull,default:current_timestamp"`
+	bun.BaseModel   `bun:"auth.users"`
+	ID              string    `bun:",pk"`
+	TenantID        string    `bun:",notnull"`
+	Email           string    `bun:",notnull,unique(tenant_id,email)"`
+	PasswordHash    string    `bun:"password_hash,notnull"`
+	Name            string    `bun:",notnull"`
+	Phone           *string
+	AvatarURL       *string
+	Role            string    `bun:",notnull,default:'staff'"`
+	IsActive        bool      `bun:"is_active,notnull,default:true"`
+	EmailVerified   bool      `bun:"email_verified,notnull,default:false"`
+	LastLoginAt     *time.Time `bun:"last_login_at,nullzero"`
+	Metadata        string    `bun:"metadata,jsonb,default:'{}'"`
+	CreatedAt       time.Time `bun:"created_at,nullzero,notnull,default:current_timestamp"`
+	UpdatedAt       time.Time `bun:"updated_at,nullzero,notnull,default:current_timestamp"`
 }
 
 type UserRepository interface {
@@ -80,7 +87,7 @@ func (r *userRepository) FindByID(ctx context.Context, id string) (*User, error)
 func (r *userRepository) UpdatePassword(ctx context.Context, id, hashedPassword string) error {
 	_, err := r.db.NewUpdate().
 		Model(&User{}).
-		Set("password = ?", hashedPassword).
+		Set("password_hash = ?", hashedPassword).
 		Set("updated_at = ?", time.Now()).
 		Where("id = ?", id).
 		Exec(ctx)

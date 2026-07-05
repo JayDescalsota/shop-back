@@ -31,7 +31,7 @@ func main() {
 
 	db := database.NewPostgres(cfg.DSN())
 
-	if err := database.RunMigrations(db, migrationsFS, "migrations"); err != nil {
+	if err := database.RunMigrations(db, migrationsFS, "migrations", "lookup_migrations"); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}
 

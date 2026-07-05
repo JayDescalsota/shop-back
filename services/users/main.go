@@ -18,7 +18,7 @@ var migrationsFS embed.FS
 
 func main() {
 	service.Serve("users", func(r chi.Router, deps *service.Dependencies) {
-		if err := database.RunMigrations(deps.DB, migrationsFS, "migrations"); err != nil {
+		if err := database.RunMigrations(deps.DB, migrationsFS, "migrations", "users_migrations"); err != nil {
 			log.Printf("warning: migration: %v", err)
 		}
 

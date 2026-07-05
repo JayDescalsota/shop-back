@@ -3,16 +3,18 @@ package repository
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/uptrace/bun"
 )
 
 type Tenant struct {
 	bun.BaseModel `bun:"auth.tenants"`
-	ID            string `bun:",pk"`
-	Name          string `bun:",notnull"`
+	ID            string    `bun:",pk"`
+	Name          string    `bun:",notnull"`
 	Address       string
 	AppID         string `bun:"app_id,notnull"`
+	CreatedAt     time.Time `bun:"created_at,default:now()"`
 }
 
 type TenantRepository interface {

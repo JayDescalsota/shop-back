@@ -11,10 +11,12 @@ import (
 	"github.com/uptrace/bun"
 )
 
-func RunMigrations(db *bun.DB, migrationsFS fs.FS, path string) error {
+func RunMigrations(db *bun.DB, migrationsFS fs.FS, path string, tableName string) error {
 	sqldb := db.DB
 
-	driver, err := postgres.WithInstance(sqldb, &postgres.Config{})
+	driver, err := postgres.WithInstance(sqldb, &postgres.Config{
+		MigrationsTable: tableName,
+	})
 	if err != nil {
 		return fmt.Errorf("postgres driver: %w", err)
 	}

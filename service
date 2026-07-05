@@ -108,21 +108,34 @@ case "$COMMAND" in
         ;;
     setup)
         log_info "Starting database infrastructure..."
-        docker compose -p autolab up -d postgres redis
+        docker compose -p autolab up -d autolab redis
         log_info "Waiting for PostgreSQL..."
         READY=false
         for i in $(seq 1 30); do
-            if docker compose -p autolab exec -T postgres pg_isready -U postgres -d postgres &> /dev/null; then
+            if docker compose -p autolab exec -T postgres pg_isready -U postgres -d autolab &> /dev/null; then
                 READY=true; break
             fi
             sleep 1
         done
         if [ "$READY" != true ]; then log_error "PostgreSQL failed to start."; exit 1; fi
         log_success "Database is ready!"
-        log_info "Running migrations..."
-        for migration in $(find services -path "*/migrations/*.sql" 2>/dev/null | sort); do
+        sleep 2
+        log_info "Creating extensions and core schema..."
+        docker compose -p autolab exec -T postgres psql -U postgres -d autolab < deployments/migrations/init/000_shared.sql
+        log_info "Running core migrations..."
+        for migration in $(find deployments/migrations/init -name "*.sql" -not -name "000_shared.sql" -not -name "*.down.sql" | sort); do
             log_info "  $(basename "$migration")..."
-            docker compose -p autolab exec -T postgres psql -U postgres -d postgres < "$migration"
+            docker compose -p autolab exec -T postgres psql -U postgres -d autolab < "$migration"
+        done
+        log_info "Running service migrations..."
+        for svc in $SERVICES; do
+            migdir="services/$svc/migrations"
+            if [ -d "$migdir" ]; then
+                for migration in $(find "$migdir" -name "*.up.sql" | sort); do
+                    log_info "    $(basename "$migration")..."
+                    docker compose -p autolab exec -T postgres psql -U postgres -d autolab < "$migration"
+                done
+            fi
         done
         log_success "Setup complete."
         ;;

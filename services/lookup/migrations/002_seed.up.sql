@@ -32,39 +32,145 @@ INSERT INTO lookup.vehicle_makes (name, slug, country, sort_order) VALUES
     ('McLaren', 'mclaren', 'United Kingdom', 30)
 ON CONFLICT (name) DO UPDATE SET slug=EXCLUDED.slug, country=EXCLUDED.country, sort_order=EXCLUDED.sort_order;
 
--- Seed: vehicle models
-INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type)
-SELECT id, unnest(ARRAY['Camry','Corolla','RAV4','Tacoma','Tundra','Highlander','4Runner']), unnest(ARRAY['camry','corolla','rav4','tacoma','tundra','highlander','4runner']), unnest(ARRAY[1982,1966,1994,1995,1999,2000,1984]), unnest(ARRAY['Sedan','Sedan','SUV','Truck','Truck','SUV','SUV']) FROM lookup.vehicle_makes WHERE name = 'Toyota';
-INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type)
-SELECT id, unnest(ARRAY['Civic','Accord','CR-V','Pilot','Odyssey']), unnest(ARRAY['civic','accord','cr-v','pilot','odyssey']), unnest(ARRAY[1972,1976,1995,2002,1994]), unnest(ARRAY['Sedan','Sedan','SUV','SUV','Minivan']) FROM lookup.vehicle_makes WHERE name = 'Honda';
-INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type)
-SELECT id, unnest(ARRAY['F-150','Mustang','Explorer','Escape','Focus']), unnest(ARRAY['f-150','mustang','explorer','escape','focus']), unnest(ARRAY[1948,1964,1990,2000,1998]), unnest(ARRAY['Truck','Coupe','SUV','SUV','Sedan']) FROM lookup.vehicle_makes WHERE name = 'Ford';
-INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type)
-SELECT id, unnest(ARRAY['Silverado','Equinox','Malibu','Tahoe','Camaro']), unnest(ARRAY['silverado','equinox','malibu','tahoe','camaro']), unnest(ARRAY[1999,2004,1964,1995,1966]), unnest(ARRAY['Truck','SUV','Sedan','SUV','Coupe']) FROM lookup.vehicle_makes WHERE name = 'Chevrolet';
-INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type)
-SELECT id, unnest(ARRAY['3 Series','5 Series','X3','X5']), unnest(ARRAY['3-series','5-series','x3','x5']), unnest(ARRAY[1975,1972,2003,1999]), unnest(ARRAY['Sedan','Sedan','SUV','SUV']) FROM lookup.vehicle_makes WHERE name = 'BMW';
-INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type)
-SELECT id, unnest(ARRAY['C-Class','E-Class','GLC','GLE']), unnest(ARRAY['c-class','e-class','glc','gle']), unnest(ARRAY[1993,1953,2015,2015]), unnest(ARRAY['Sedan','Sedan','SUV','SUV']) FROM lookup.vehicle_makes WHERE name = 'Mercedes-Benz';
-INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type)
-SELECT id, unnest(ARRAY['A3','A4','Q5','Q7']), unnest(ARRAY['a3','a4','q5','q7']), unnest(ARRAY[1996,1994,2008,2005]), unnest(ARRAY['Sedan','Sedan','SUV','SUV']) FROM lookup.vehicle_makes WHERE name = 'Audi';
-INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type)
-SELECT id, unnest(ARRAY['Golf','Jetta','Passat','Tiguan']), unnest(ARRAY['golf','jetta','passat','tiguan']), unnest(ARRAY[1974,1979,1973,2007]), unnest(ARRAY['Hatchback','Sedan','Sedan','SUV']) FROM lookup.vehicle_makes WHERE name = 'Volkswagen';
-INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type)
-SELECT id, unnest(ARRAY['Altima','Sentra','Rogue','Frontier']), unnest(ARRAY['altima','sentra','rogue','frontier']), unnest(ARRAY[1992,1982,2007,1997]), unnest(ARRAY['Sedan','Sedan','SUV','Truck']) FROM lookup.vehicle_makes WHERE name = 'Nissan';
-INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type)
-SELECT id, unnest(ARRAY['Elantra','Sonata','Tucson','Santa Fe']), unnest(ARRAY['elantra','sonata','tucson','santa-fe']), unnest(ARRAY[1990,1985,2004,2000]), unnest(ARRAY['Sedan','Sedan','SUV','SUV']) FROM lookup.vehicle_makes WHERE name = 'Hyundai';
-INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type)
-SELECT id, unnest(ARRAY['Forte','Sportage','Sorento','Telluride']), unnest(ARRAY['forte','sportage','sorento','telluride']), unnest(ARRAY[2008,1993,2002,2019]), unnest(ARRAY['Sedan','SUV','SUV','SUV']) FROM lookup.vehicle_makes WHERE name = 'Kia';
-INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type)
-SELECT id, unnest(ARRAY['Outback','Forester','Crosstrek','Impreza']), unnest(ARRAY['outback','forester','crosstrek','impreza']), unnest(ARRAY[1994,1997,2013,1992]), unnest(ARRAY['SUV','SUV','SUV','Sedan']) FROM lookup.vehicle_makes WHERE name = 'Subaru';
-INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type)
-SELECT id, unnest(ARRAY['CX-5','Mazda3','Mazda6','CX-9']), unnest(ARRAY['cx-5','mazda3','mazda6','cx-9']), unnest(ARRAY[2012,2003,2002,2006]), unnest(ARRAY['SUV','Sedan','Sedan','SUV']) FROM lookup.vehicle_makes WHERE name = 'Mazda';
-INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type)
-SELECT id, unnest(ARRAY['RX','ES','NX','IS']), unnest(ARRAY['rx','es','nx','is']), unnest(ARRAY[1998,1989,2014,1999]), unnest(ARRAY['SUV','Sedan','SUV','Sedan']) FROM lookup.vehicle_makes WHERE name = 'Lexus';
-INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type)
-SELECT id, unnest(ARRAY['Wrangler','Grand Cherokee','Cherokee']), unnest(ARRAY['wrangler','grand-cherokee','cherokee']), unnest(ARRAY[1986,1992,1974]), unnest(ARRAY['SUV','SUV','SUV']) FROM lookup.vehicle_makes WHERE name = 'Jeep';
-INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type)
-SELECT id, unnest(ARRAY['Model 3','Model Y','Model S','Model X']), unnest(ARRAY['model-3','model-y','model-s','model-x']), unnest(ARRAY[2017,2020,2012,2015]), unnest(ARRAY['Sedan','SUV','Sedan','SUV']) FROM lookup.vehicle_makes WHERE name = 'Tesla';
+-- Get make IDs for use in model inserts
+DO $$
+DECLARE
+    toyota_id UUID := (SELECT id FROM lookup.vehicle_makes WHERE name = 'Toyota');
+    honda_id UUID := (SELECT id FROM lookup.vehicle_makes WHERE name = 'Honda');
+    ford_id UUID := (SELECT id FROM lookup.vehicle_makes WHERE name = 'Ford');
+    chevy_id UUID := (SELECT id FROM lookup.vehicle_makes WHERE name = 'Chevrolet');
+    bmw_id UUID := (SELECT id FROM lookup.vehicle_makes WHERE name = 'BMW');
+    mbenz_id UUID := (SELECT id FROM lookup.vehicle_makes WHERE name = 'Mercedes-Benz');
+    audi_id UUID := (SELECT id FROM lookup.vehicle_makes WHERE name = 'Audi');
+    vw_id UUID := (SELECT id FROM lookup.vehicle_makes WHERE name = 'Volkswagen');
+    nissan_id UUID := (SELECT id FROM lookup.vehicle_makes WHERE name = 'Nissan');
+    hyundai_id UUID := (SELECT id FROM lookup.vehicle_makes WHERE name = 'Hyundai');
+    kia_id UUID := (SELECT id FROM lookup.vehicle_makes WHERE name = 'Kia');
+    subaru_id UUID := (SELECT id FROM lookup.vehicle_makes WHERE name = 'Subaru');
+    mazda_id UUID := (SELECT id FROM lookup.vehicle_makes WHERE name = 'Mazda');
+    lexus_id UUID := (SELECT id FROM lookup.vehicle_makes WHERE name = 'Lexus');
+    jeep_id UUID := (SELECT id FROM lookup.vehicle_makes WHERE name = 'Jeep');
+    tesla_id UUID := (SELECT id FROM lookup.vehicle_makes WHERE name = 'Tesla');
+BEGIN
+
+INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type) VALUES
+    (toyota_id, 'Camry', 'camry', 1982, 'Sedan'),
+    (toyota_id, 'Corolla', 'corolla', 1966, 'Sedan'),
+    (toyota_id, 'RAV4', 'rav4', 1994, 'SUV'),
+    (toyota_id, 'Tacoma', 'tacoma', 1995, 'Truck'),
+    (toyota_id, 'Tundra', 'tundra', 1999, 'Truck'),
+    (toyota_id, 'Highlander', 'highlander', 2000, 'SUV'),
+    (toyota_id, '4Runner', '4runner', 1984, 'SUV')
+ON CONFLICT (make_id, name) DO NOTHING;
+
+INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type) VALUES
+    (honda_id, 'Civic', 'civic', 1972, 'Sedan'),
+    (honda_id, 'Accord', 'accord', 1976, 'Sedan'),
+    (honda_id, 'CR-V', 'cr-v', 1995, 'SUV'),
+    (honda_id, 'Pilot', 'pilot', 2002, 'SUV'),
+    (honda_id, 'Odyssey', 'odyssey', 1994, 'Minivan')
+ON CONFLICT (make_id, name) DO NOTHING;
+
+INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type) VALUES
+    (ford_id, 'F-150', 'f-150', 1948, 'Truck'),
+    (ford_id, 'Mustang', 'mustang', 1964, 'Coupe'),
+    (ford_id, 'Explorer', 'explorer', 1990, 'SUV'),
+    (ford_id, 'Escape', 'escape', 2000, 'SUV'),
+    (ford_id, 'Focus', 'focus', 1998, 'Sedan')
+ON CONFLICT (make_id, name) DO NOTHING;
+
+INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type) VALUES
+    (chevy_id, 'Silverado', 'silverado', 1999, 'Truck'),
+    (chevy_id, 'Equinox', 'equinox', 2004, 'SUV'),
+    (chevy_id, 'Malibu', 'malibu', 1964, 'Sedan'),
+    (chevy_id, 'Tahoe', 'tahoe', 1995, 'SUV'),
+    (chevy_id, 'Camaro', 'camaro', 1966, 'Coupe')
+ON CONFLICT (make_id, name) DO NOTHING;
+
+INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type) VALUES
+    (bmw_id, '3 Series', '3-series', 1975, 'Sedan'),
+    (bmw_id, '5 Series', '5-series', 1972, 'Sedan'),
+    (bmw_id, 'X3', 'x3', 2003, 'SUV'),
+    (bmw_id, 'X5', 'x5', 1999, 'SUV')
+ON CONFLICT (make_id, name) DO NOTHING;
+
+INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type) VALUES
+    (mbenz_id, 'C-Class', 'c-class', 1993, 'Sedan'),
+    (mbenz_id, 'E-Class', 'e-class', 1953, 'Sedan'),
+    (mbenz_id, 'GLC', 'glc', 2015, 'SUV'),
+    (mbenz_id, 'GLE', 'gle', 2015, 'SUV')
+ON CONFLICT (make_id, name) DO NOTHING;
+
+INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type) VALUES
+    (audi_id, 'A3', 'a3', 1996, 'Sedan'),
+    (audi_id, 'A4', 'a4', 1994, 'Sedan'),
+    (audi_id, 'Q5', 'q5', 2008, 'SUV'),
+    (audi_id, 'Q7', 'q7', 2005, 'SUV')
+ON CONFLICT (make_id, name) DO NOTHING;
+
+INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type) VALUES
+    (vw_id, 'Golf', 'golf', 1974, 'Hatchback'),
+    (vw_id, 'Jetta', 'jetta', 1979, 'Sedan'),
+    (vw_id, 'Passat', 'passat', 1973, 'Sedan'),
+    (vw_id, 'Tiguan', 'tiguan', 2007, 'SUV')
+ON CONFLICT (make_id, name) DO NOTHING;
+
+INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type) VALUES
+    (nissan_id, 'Altima', 'altima', 1992, 'Sedan'),
+    (nissan_id, 'Sentra', 'sentra', 1982, 'Sedan'),
+    (nissan_id, 'Rogue', 'rogue', 2007, 'SUV'),
+    (nissan_id, 'Frontier', 'frontier', 1997, 'Truck')
+ON CONFLICT (make_id, name) DO NOTHING;
+
+INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type) VALUES
+    (hyundai_id, 'Elantra', 'elantra', 1990, 'Sedan'),
+    (hyundai_id, 'Sonata', 'sonata', 1985, 'Sedan'),
+    (hyundai_id, 'Tucson', 'tucson', 2004, 'SUV'),
+    (hyundai_id, 'Santa Fe', 'santa-fe', 2000, 'SUV')
+ON CONFLICT (make_id, name) DO NOTHING;
+
+INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type) VALUES
+    (kia_id, 'Forte', 'forte', 2008, 'Sedan'),
+    (kia_id, 'Sportage', 'sportage', 1993, 'SUV'),
+    (kia_id, 'Sorento', 'sorento', 2002, 'SUV'),
+    (kia_id, 'Telluride', 'telluride', 2019, 'SUV')
+ON CONFLICT (make_id, name) DO NOTHING;
+
+INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type) VALUES
+    (subaru_id, 'Outback', 'outback', 1994, 'SUV'),
+    (subaru_id, 'Forester', 'forester', 1997, 'SUV'),
+    (subaru_id, 'Crosstrek', 'crosstrek', 2013, 'SUV'),
+    (subaru_id, 'Impreza', 'impreza', 1992, 'Sedan')
+ON CONFLICT (make_id, name) DO NOTHING;
+
+INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type) VALUES
+    (mazda_id, 'CX-5', 'cx-5', 2012, 'SUV'),
+    (mazda_id, 'Mazda3', 'mazda3', 2003, 'Sedan'),
+    (mazda_id, 'Mazda6', 'mazda6', 2002, 'Sedan'),
+    (mazda_id, 'CX-9', 'cx-9', 2006, 'SUV')
+ON CONFLICT (make_id, name) DO NOTHING;
+
+INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type) VALUES
+    (lexus_id, 'RX', 'rx', 1998, 'SUV'),
+    (lexus_id, 'ES', 'es', 1989, 'Sedan'),
+    (lexus_id, 'NX', 'nx', 2014, 'SUV'),
+    (lexus_id, 'IS', 'is', 1999, 'Sedan')
+ON CONFLICT (make_id, name) DO NOTHING;
+
+INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type) VALUES
+    (jeep_id, 'Wrangler', 'wrangler', 1986, 'SUV'),
+    (jeep_id, 'Grand Cherokee', 'grand-cherokee', 1992, 'SUV'),
+    (jeep_id, 'Cherokee', 'cherokee', 1974, 'SUV')
+ON CONFLICT (make_id, name) DO NOTHING;
+
+INSERT INTO lookup.vehicle_models (make_id, name, slug, year_start, vehicle_type) VALUES
+    (tesla_id, 'Model 3', 'model-3', 2017, 'Sedan'),
+    (tesla_id, 'Model Y', 'model-y', 2020, 'SUV'),
+    (tesla_id, 'Model S', 'model-s', 2012, 'Sedan'),
+    (tesla_id, 'Model X', 'model-x', 2015, 'SUV')
+ON CONFLICT (make_id, name) DO NOTHING;
+
+END $$;
 
 -- Seed: service types
 INSERT INTO lookup.service_types (name, code, category, system, description, estimated_hours, is_global) VALUES

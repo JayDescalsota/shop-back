@@ -1,5 +1,4 @@
-DELETE FROM auth.user_tenants;
-DELETE FROM auth.user_apps;
-DELETE FROM auth.users;
-DELETE FROM auth.tenants;
-DELETE FROM auth.apps;
+DELETE FROM auth.user_tenants WHERE tenant_id = '00000000-0000-0000-0001-202605270001';
+DELETE FROM auth.user_apps WHERE user_id IN (SELECT id FROM auth.users WHERE tenant_id = '00000000-0000-0000-0001-202605270001');
+DELETE FROM auth.users WHERE tenant_id = '00000000-0000-0000-0001-202605270001';
+DELETE FROM tenants.tenants WHERE id = '00000000-0000-0000-0001-202605270001';

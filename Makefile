@@ -43,7 +43,10 @@ build-%: ## Build a specific service
 # ============================================================================
 migrate-up: ## Run all pending database migrations
 	@echo "Running database migrations..."
-	psql -h localhost -U postgres -d autolab -f deployments/migrations/init/000_extensions.sql
+	psql -h localhost -U postgres -d postgres -f deployments/migrations/init/000_shared.sql
+	for f in $$(ls deployments/migrations/init/*.sql 2>/dev/null | grep -v 000_shared | grep -v '\.down\.sql' | sort); do \
+		psql -h localhost -U postgres -d postgres -f $$f; \
+	done
 	@echo "Migrations complete"
 
 migrate-down: ## Drop all tables (DANGER)

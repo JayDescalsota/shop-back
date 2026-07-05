@@ -31,7 +31,7 @@ func main() {
 
 	db := database.NewPostgres(cfg.DSN())
 
-	if err := database.RunMigrations(db, migrationsFS, "migrations"); err != nil {
+	if err := database.RunMigrations(db, migrationsFS, "migrations", "auth_migrations"); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}
 
@@ -41,10 +41,6 @@ func main() {
 	userTenantRepo := repository.NewUserTenantRepository(db)
 	jwtManager := middleware.NewJWTManager(cfg.JWTSecret, cfg.JWTExpiration, cfg.JWTRefreshExpiration)
 	authSvc := authservice.NewAuthService(userRepo, userAppRepo, tenantRepo, userTenantRepo, jwtManager)
-
-	if err := authSvc.SeedUsers(context.Background()); err != nil {
-		log.Printf("warning: seed users: %v", err)
-	}
 
 	res := resolver.New(authSvc)
 	server := gqlhandler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: res}))

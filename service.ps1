@@ -110,20 +110,40 @@ switch ($Command) {
 
     "setup" {
         Write-Info "Starting database infrastructure..."
-        docker compose -p autolab up -d postgres redis
+        docker compose -p autolab up -d autolab redis
         Write-Info "Waiting for PostgreSQL..."
         $ready = $false
         for ($i = 1; $i -le 30; $i++) {
-            docker compose -p autolab exec -T postgres pg_isready -U postgres -d postgres > $null 2>&1
+            docker compose -p autolab exec -T postgres pg_isready -U postgres -d autolab > $null 2>&1
             if ($LastExitCode -eq 0) { $ready = $true; break }
             Start-Sleep -Seconds 1
         }
         if (-not $ready) { Write-ErrorMsg "PostgreSQL failed to start."; exit 1 }
         Write-Success "Database is ready!"
-        Write-Info "Running migrations..."
-        Get-ChildItem -Path "services" -Filter "*.sql" -Recurse | Where-Object { $_.FullName -match "\\migrations\\" } | Sort-Object Name | ForEach-Object {
-            Write-Info "  $($_.Name)..."
-            Get-Content $_.FullName -Raw | docker compose -p autolab exec -T postgres psql -U postgres -d postgres
+        Write-Info "Waiting for Unix socket to be available..."
+        Start-Sleep -Seconds 2
+        
+        Write-Info "Creating extensions and core schema..."
+        Get-Content "deployments/migrations/init/000_shared.sql" -Raw | docker compose -p autolab exec -T postgres psql -U postgres -d autolab > $null
+        
+        Write-Info "Running core migrations..."
+        $coreMigs = Get-ChildItem -Path "deployments/migrations/init" -Filter "*.sql" | Where-Object { $_.Name -notmatch "\.down\.sql$" -and $_.Name -ne '000_shared.sql' } | Sort-Object Name
+        foreach ($mig in $coreMigs) {
+            Write-Info "  $($mig.Name)..."
+            Get-Content $mig.FullName -Raw | docker compose -p autolab exec -T postgres psql -U postgres -d autolab > $null
+        }
+        
+        Write-Info "Running service migrations..."
+        foreach ($svc in $SERVICES) {
+            $migDir = "services\$svc\migrations"
+            if (Test-Path $migDir) {
+                Write-Info "  $svc..."
+                $serviceMigs = Get-ChildItem -Path $migDir -Filter "*.up.sql" | Sort-Object Name
+                foreach ($mig in $serviceMigs) {
+                    Write-Info "    $($mig.Name)..."
+                    Get-Content $mig.FullName -Raw | docker compose -p autolab exec -T postgres psql -U postgres -d autolab > $null
+                }
+            }
         }
         Write-Success "Setup complete."
     }

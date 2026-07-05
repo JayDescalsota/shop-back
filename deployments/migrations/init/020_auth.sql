@@ -61,6 +61,23 @@ CREATE TABLE auth.password_resets (
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+CREATE TABLE auth.user_apps (
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id     UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    app_id      TEXT NOT NULL,
+    role        TEXT NOT NULL DEFAULT 'staff',
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE(user_id, app_id)
+);
+
+CREATE TABLE auth.user_tenants (
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    email       TEXT NOT NULL,
+    tenant_id   UUID NOT NULL REFERENCES tenants.tenants(id) ON DELETE CASCADE,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE(email, tenant_id)
+);
+
 -- Seed: default admin user (password: password123)
 -- Password hash generated for 'password123'
 INSERT INTO auth.users (id, tenant_id, email, password_hash, name, role)

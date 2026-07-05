@@ -1,7 +1,12 @@
 -- AutoLab: Shared bootstrap (extensions, public helpers)
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+
+CREATE OR REPLACE FUNCTION uuid_generate_v4() RETURNS UUID AS $$
+BEGIN
+    RETURN gen_random_uuid();
+END;
+$$ LANGUAGE plpgsql STABLE;
 
 CREATE TABLE IF NOT EXISTS public.global_id_sequences (
     entity_type TEXT PRIMARY KEY,

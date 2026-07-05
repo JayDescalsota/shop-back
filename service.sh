@@ -127,19 +127,31 @@ rebuild_all() {
 # ----- setup (db + migrations) -----
 do_setup() {
     info "Starting database infrastructure..."
-    docker compose -p autolab up -d postgres redis
+    docker compose -p autolab up -d autolab redis
     info "Waiting for PostgreSQL..."
     for i in $(seq 1 30); do
-        if docker compose -p autolab exec -T postgres pg_isready -U postgres -d postgres >/dev/null 2>&1; then
+        if docker compose -p autolab exec -T postgres pg_isready -U postgres -d autolab >/dev/null 2>&1; then
             ok "Database is ready!"
             break
         fi
         sleep 1
     done
-    info "Running migrations..."
-    find services -path "*/migrations/*.sql" | sort | while read -r f; do
+    info "Creating extensions and core schema..."
+    docker compose -p autolab exec -T postgres psql -U postgres -d autolab < deployments/migrations/init/000_shared.sql
+    info "Running core migrations..."
+    find deployments/migrations/init -name "*.sql" ! -name "000_shared.sql" ! -name "*.down.sql" | sort | while read -r f; do
         info "  $(basename "$f")..."
-        docker compose -p autolab exec -T postgres psql -U postgres -d postgres < "$f"
+        docker compose -p autolab exec -T postgres psql -U postgres -d autolab < "$f"
+    done
+    info "Running service migrations..."
+    for svc in "${SERVICES[@]}"; do
+        migdir="services/$svc/migrations"
+        if [ -d "$migdir" ]; then
+            find "$migdir" -name "*.up.sql" | sort | while read -r f; do
+                info "    $(basename "$f")..."
+                docker compose -p autolab exec -T postgres psql -U postgres -d autolab < "$f"
+            done
+        fi
     done
     ok "Setup complete."
 }
