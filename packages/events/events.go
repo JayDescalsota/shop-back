@@ -1,6 +1,7 @@
 package events
 
 import (
+	"context"
 	"encoding/json"
 	"time"
 
@@ -103,7 +104,7 @@ func (p *Publisher) PublishWithCorrelation(eventType, tenantID, correlationID st
 type Handler func(Envelope) error
 
 func Subscribe(js jetstream.JetStream, subject string, handler Handler) error {
-	cons, err := js.CreateOrUpdateConsumer(nil, jetstream.ConsumerConfig{
+	cons, err := js.CreateOrUpdateConsumer(context.Background(), subject+"-consumer", jetstream.ConsumerConfig{
 		Name:          subject + "-consumer",
 		FilterSubject: subject,
 		AckPolicy:    jetstream.AckExplicitPolicy,

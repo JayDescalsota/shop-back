@@ -5,8 +5,8 @@ type Vehicle @key(fields: "id") {
     id: ID!
     tenantId: ID!
     ownerId: ID!
-    make: VehicleMake
-    model: VehicleModel
+    makeId: ID
+    modelId: ID
     year: Int
     vin: String
     licensePlate: String
@@ -29,7 +29,6 @@ type VehicleMake @key(fields: "id") {
     id: ID!
     name: String!
     logo: String
-    models: [VehicleModel!]!
 }
 
 type VehicleModel @key(fields: "id") {
@@ -115,6 +114,7 @@ type ExpenseSummary {
 }
 
 input CreateVehicleInput {
+    tenantId: ID!
     ownerId: ID!
     makeId: ID
     modelId: ID
@@ -161,7 +161,8 @@ input AddExpenseInput {
     amount: Float!
     date: String!
     description: String
-    recurring: Boolean
+    receiptUrl: String
+    recurring: Boolean!
 }
 
 input AddDocumentInput {

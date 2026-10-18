@@ -1,23 +1,35 @@
 package main
 
 import (
-	"net/http"
+	"embed"
+	"log"
 
+	"backend/packages/database"
 	"backend/packages/service"
+	"backend/services/vehicles/generated"
+	"backend/services/vehicles/repository"
+	"backend/services/vehicles/resolver"
+	vehiclesservice "backend/services/vehicles/service"
 
+	gqlhandler "github.com/99designs/gqlgen/graphql/handler"
 	"github.com/go-chi/chi/v5"
 )
 
+//go:embed migrations/*.sql
+var migrationsFS embed.FS
+
 func main() {
 	service.Serve("vehicles", func(r chi.Router, deps *service.Dependencies) {
-		r.Post("/graphql", handleVehicles(deps))
-		r.Post("/query", handleVehicles(deps))
-	})
-}
+		if err := database.RunMigrations(deps.DB, migrationsFS, "migrations", "vehicles_migrations"); err != nil {
+			log.Printf("warning: migration: %v", err)
+		}
 
-func handleVehicles(deps *service.Dependencies) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"data":{"__typename":"Query"}}`))
-	}
+		repo := repository.New(deps.DB)
+		svc := vehiclesservice.New(repo)
+		resv := resolver.New(svc)
+		srv := gqlhandler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: resv}))
+
+		r.Post("/graphql", srv.ServeHTTP)
+		r.Post("/query", srv.ServeHTTP)
+	})
 }

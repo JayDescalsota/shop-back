@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"fmt"
 	"net/mail"
 	"regexp"
 	"strings"
@@ -133,18 +134,3 @@ func itoa(i int) string {
 		"",
 	))
 }
-
-// Use a simple approach to avoid import cycle
-func itoaSimple(n int) string {
-	if n == 0 {
-		return "0"
-	}
-	s := ""
-	for n > 0 {
-		s = string(rune('0'+n%10)) + s
-		n /= 10
-	}
-	return s
-}
-
-var itoa = itoaSimple
